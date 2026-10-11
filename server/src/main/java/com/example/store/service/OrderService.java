@@ -53,6 +53,9 @@ public class OrderService {
             if (product == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
             }
+            if (!product.isActive()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product is no longer available: " + product.getName());
+            }
             checkoutItems.add(new CheckoutItem(product, cartItem.getQuantity()));
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
@@ -93,6 +96,49 @@ public class OrderService {
                     item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))));
         }
         return toDetails(order, itemDetails);
+    }
+
+    public List<Order> getAllOrders() { return orderRepository.findAllOrders(); }
+
+    public OrderDetails getAdminOrder(Integer orderId) {
+        Order order = orderRepository.findOrderById(orderId);
+        if (order == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+        return toDetails(order, getOrderItemDetails(orderId));
+    }
+
+    @Transactional
+    public Order updateOrderStatus(Integer orderId, String requestedStatus) {
+        Order order = orderRepository.findOrderById(orderId);
+        if (order == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+        if (!isAllowedTransition(order.getStatus(), requestedStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status transition");
+        }
+        if ("CANCELLED".equals(requestedStatus)) {
+            for (OrderItem item : orderItemRepository.findOrderItemsByOrderId(orderId)) {
+                productRepository.incrementStock(item.getProductId(), item.getQuantity());
+            }
+        }
+        order.setStatus(requestedStatus);
+        return orderRepository.updateOrder(order);
+    }
+
+    private boolean isAllowedTransition(String currentStatus, String requestedStatus) {
+        return ("PLACED".equals(currentStatus) && ("SHIPPED".equals(requestedStatus) || "CANCELLED".equals(requestedStatus)))
+                || ("SHIPPED".equals(currentStatus) && "DELIVERED".equals(requestedStatus));
+    }
+
+    private List<OrderItemDetails> getOrderItemDetails(Integer orderId) {
+        List<OrderItemDetails> itemDetails = new ArrayList<>();
+        for (OrderItem item : orderItemRepository.findOrderItemsByOrderId(orderId)) {
+            Product product = productRepository.findProductById(item.getProductId());
+            itemDetails.add(new OrderItemDetails(item.getProductId(), product.getName(), item.getQuantity(), item.getUnitPrice(),
+                    item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))));
+        }
+        return itemDetails;
     }
 
     private OrderDetails toDetails(Order order, List<OrderItemDetails> itemDetails) {

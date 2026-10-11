@@ -55,4 +55,14 @@ public class UserService {
         }
         return userRepository.deleteUser(registeredUser.getUsername());
     }
+
+    public CustomUser updateUserRole(String username, Role role) {
+        if (role == null) {
+            return null;
+        }
+        if (getUserByUsername(username) == null) {
+            return null;
+        }
+        return userRepository.updateUserRole(username, role.name());
+    }
 }

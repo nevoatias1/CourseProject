@@ -51,6 +51,11 @@ public class UserRepository {
         return findUserByUsername(user.getUsername());
     }
 
+    public CustomUser updateUserRole(String username, String role) {
+        jdbcTemplate.update("UPDATE " + USERS_TABLE + " SET role = ? WHERE username = ?", role, username);
+        return findUserByUsername(username);
+    }
+
     public String deleteUser(String username) {
         String sql = String.format("DELETE FROM %s WHERE username = ?", USERS_TABLE);
         jdbcTemplate.update(sql, username);

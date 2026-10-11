@@ -11,6 +11,7 @@ public class Product {
     private Integer stock;
     private Integer categoryId;
     private String categoryName;
+    private boolean active = true;
 
     public Product() { }
 
@@ -45,4 +46,6 @@ public class Product {
     public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }

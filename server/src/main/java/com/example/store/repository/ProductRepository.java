@@ -39,11 +39,11 @@ public class ProductRepository {
     }
 
     public List<Product> findPublicProducts(Integer categoryId, String search) {
-        StringBuilder sql = new StringBuilder("SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, c.name AS category_name "
-                + "FROM products p JOIN categories c ON p.category_id = c.id");
+        StringBuilder sql = new StringBuilder("SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, p.active, c.name AS category_name "
+                + "FROM products p JOIN categories c ON p.category_id = c.id WHERE p.active = TRUE");
         List<Object> parameters = new ArrayList<>();
         if (categoryId != null || (search != null && !search.isBlank())) {
-            sql.append(" WHERE ");
+            sql.append(" AND ");
             if (categoryId != null) {
                 sql.append("p.category_id = ?");
                 parameters.add(categoryId);
@@ -62,8 +62,8 @@ public class ProductRepository {
 
     public Product findPublicProductById(Integer id) {
         try {
-            String sql = "SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, c.name AS category_name "
-                    + "FROM products p JOIN categories c ON p.category_id = c.id WHERE p.id = ?";
+            String sql = "SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, p.active, c.name AS category_name "
+                    + "FROM products p JOIN categories c ON p.category_id = c.id WHERE p.id = ? AND p.active = TRUE";
             return jdbcTemplate.queryForObject(sql, new ProductWithCategoryMapper(), id);
         } catch (Exception exception) {
             return null;
@@ -71,7 +71,7 @@ public class ProductRepository {
     }
 
     public Product insertProduct(Product product) {
-        String sql = "INSERT INTO " + PRODUCTS_TABLE + " (name, description, price, image_url, stock, category_id) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO " + PRODUCTS_TABLE + " (name, description, price, image_url, stock, category_id, active) VALUES (?, ?, ?, ?, ?, ?, TRUE)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -94,12 +94,21 @@ public class ProductRepository {
     }
 
     public int decrementStockIfAvailable(Integer productId, Integer quantity) {
-        return jdbcTemplate.update("UPDATE " + PRODUCTS_TABLE + " SET stock = stock - ? WHERE id = ? AND stock >= ?",
+        return jdbcTemplate.update("UPDATE " + PRODUCTS_TABLE + " SET stock = stock - ? WHERE id = ? AND stock >= ? AND active = TRUE",
                 quantity, productId, quantity);
     }
 
+    public int incrementStock(Integer productId, Integer quantity) {
+        return jdbcTemplate.update("UPDATE " + PRODUCTS_TABLE + " SET stock = stock + ? WHERE id = ?", quantity, productId);
+    }
+
+    public Product setProductActive(Integer id, boolean active) {
+        jdbcTemplate.update("UPDATE " + PRODUCTS_TABLE + " SET active = ? WHERE id = ?", active, id);
+        return findProductById(id);
+    }
+
     public String deleteProduct(Integer id) {
-        jdbcTemplate.update("DELETE FROM " + PRODUCTS_TABLE + " WHERE id = ?", id);
-        return "Product deleted successfully";
+        setProductActive(id, false);
+        return "Product deactivated successfully";
     }
 }

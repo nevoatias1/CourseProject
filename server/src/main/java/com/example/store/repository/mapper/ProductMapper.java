@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class ProductMapper implements RowMapper<Product> {
     @Override
     public Product mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return new Product(
+        Product product = new Product(
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("description"),
@@ -17,5 +17,7 @@ public class ProductMapper implements RowMapper<Product> {
                 rs.getString("image_url"),
                 rs.getInt("stock"),
                 rs.getInt("category_id"));
+        product.setActive(rs.getBoolean("active"));
+        return product;
     }
 }

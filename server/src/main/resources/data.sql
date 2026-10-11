@@ -27,6 +27,7 @@ CREATE TABLE products (
     image_url VARCHAR(1000),
     stock INT NOT NULL,
     category_id INT NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 

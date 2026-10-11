@@ -21,7 +21,7 @@ public class OrderRepository {
     }
 
     public List<Order> findAllOrders() {
-        return jdbcTemplate.query("SELECT * FROM " + ORDERS_TABLE, new OrderMapper());
+        return jdbcTemplate.query("SELECT * FROM " + ORDERS_TABLE + " ORDER BY created_at DESC, id DESC", new OrderMapper());
     }
 
     public Order findOrderById(Integer id) {
