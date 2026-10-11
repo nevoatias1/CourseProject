@@ -93,6 +93,11 @@ public class ProductRepository {
         return findProductById(product.getId());
     }
 
+    public int decrementStockIfAvailable(Integer productId, Integer quantity) {
+        return jdbcTemplate.update("UPDATE " + PRODUCTS_TABLE + " SET stock = stock - ? WHERE id = ? AND stock >= ?",
+                quantity, productId, quantity);
+    }
+
     public String deleteProduct(Integer id) {
         jdbcTemplate.update("DELETE FROM " + PRODUCTS_TABLE + " WHERE id = ?", id);
         return "Product deleted successfully";

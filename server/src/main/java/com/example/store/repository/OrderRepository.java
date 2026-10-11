@@ -33,7 +33,15 @@ public class OrderRepository {
     }
 
     public List<Order> findOrdersByUsername(String username) {
-        return jdbcTemplate.query("SELECT * FROM " + ORDERS_TABLE + " WHERE username = ?", new OrderMapper(), username);
+        return jdbcTemplate.query("SELECT * FROM " + ORDERS_TABLE + " WHERE username = ? ORDER BY created_at DESC, id DESC", new OrderMapper(), username);
+    }
+
+    public Order findOrderByIdAndUsername(Integer id, String username) {
+        try {
+            return jdbcTemplate.queryForObject("SELECT * FROM " + ORDERS_TABLE + " WHERE id = ? AND username = ?", new OrderMapper(), id, username);
+        } catch (Exception exception) {
+            return null;
+        }
     }
 
     public Order insertOrder(Order order) {

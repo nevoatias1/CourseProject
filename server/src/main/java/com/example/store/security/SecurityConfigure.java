@@ -39,7 +39,7 @@ public class SecurityConfigure implements WebMvcConfigurer {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/authenticate", "/users/register", "/h2-console/**", "/products", "/products/**", "/categories", "/categories/**").permitAll()
-                        .requestMatchers("/users", "/users/**", "/cart", "/cart/**", "/favorites", "/favorites/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers("/users", "/users/**", "/cart", "/cart/**", "/favorites", "/favorites/**", "/orders", "/orders/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
