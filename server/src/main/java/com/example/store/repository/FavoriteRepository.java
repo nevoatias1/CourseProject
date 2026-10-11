@@ -41,4 +41,8 @@ public class FavoriteRepository {
         jdbcTemplate.update("DELETE FROM " + FAVORITES_TABLE + " WHERE username = ? AND product_id = ?", username, productId);
         return "Favorite deleted successfully";
     }
+
+    public void deleteFavoritesByProductId(Integer productId) {
+        jdbcTemplate.update("DELETE FROM " + FAVORITES_TABLE + " WHERE product_id = ?", productId);
+    }
 }

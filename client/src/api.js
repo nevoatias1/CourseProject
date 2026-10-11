@@ -8,7 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { requiresAuth = false, ...options } = {}) {
+async function request(path, { requiresAuth = false, verifyTokenOnForbidden = true, ...options } = {}) {
   const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) }
   const token = localStorage.getItem('token')
   if (token) headers.Authorization = `Bearer ${token}`
@@ -23,9 +23,24 @@ async function request(path, { requiresAuth = false, ...options } = {}) {
   const contentType = response.headers.get('content-type') || ''
   const payload = contentType.includes('application/json') ? await response.json() : await response.text()
   if (!response.ok) {
-    if (requiresAuth && (response.status === 401 || response.status === 403)) {
+    if (requiresAuth && response.status === 401) {
       localStorage.removeItem('token')
       window.dispatchEvent(new Event('auth-expired'))
+    }
+    if (requiresAuth && response.status === 403) {
+      let tokenIsValid = false
+      if (verifyTokenOnForbidden && path !== '/users') {
+        try {
+          await request('/users', { requiresAuth: true, verifyTokenOnForbidden: false })
+          tokenIsValid = true
+        } catch {
+          tokenIsValid = false
+        }
+      }
+      if (!tokenIsValid) {
+        localStorage.removeItem('token')
+        window.dispatchEvent(new Event('auth-expired'))
+      }
     }
     const message = typeof payload === 'string' && payload ? payload : payload?.message
     throw new ApiError(message || `Request failed (${response.status}).`, response.status)

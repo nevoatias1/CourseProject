@@ -53,4 +53,8 @@ public class CartItemRepository {
         jdbcTemplate.update("DELETE FROM " + CART_ITEMS_TABLE + " WHERE username = ?", username);
         return "Cart cleared successfully";
     }
+
+    public void deleteCartItemsByProductId(Integer productId) {
+        jdbcTemplate.update("DELETE FROM " + CART_ITEMS_TABLE + " WHERE product_id = ?", productId);
+    }
 }

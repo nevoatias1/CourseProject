@@ -38,7 +38,7 @@ public class SecurityConfigure implements WebMvcConfigurer {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/authenticate", "/users/register", "/h2-console/**", "/products", "/products/**", "/categories", "/categories/**").permitAll()
+                        .requestMatchers("/authenticate", "/users/register", "/error", "/h2-console/**", "/products", "/products/**", "/categories", "/categories/**").permitAll()
                         .requestMatchers("/users", "/users/**", "/cart", "/cart/**", "/favorites", "/favorites/**", "/orders", "/orders/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated())

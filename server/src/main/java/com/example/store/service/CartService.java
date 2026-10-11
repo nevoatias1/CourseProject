@@ -29,6 +29,9 @@ public class CartService {
         BigDecimal total = BigDecimal.ZERO;
         for (CartItem cartItem : cartItemRepository.findCartItemsByUsername(username)) {
             Product product = productRepository.findPublicProductById(cartItem.getProductId());
+            if (product == null) {
+                continue;
+            }
             BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             items.add(new CartItemDetails(product.getId(), product.getName(), product.getPrice(), product.getImageUrl(), cartItem.getQuantity(), lineTotal));
             total = total.add(lineTotal);
