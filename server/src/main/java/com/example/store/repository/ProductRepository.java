@@ -2,6 +2,7 @@ package com.example.store.repository;
 
 import com.example.store.model.Product;
 import com.example.store.repository.mapper.ProductMapper;
+import com.example.store.repository.mapper.ProductWithCategoryMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
+import java.util.ArrayList;
 
 @Repository
 public class ProductRepository {
@@ -34,6 +36,38 @@ public class ProductRepository {
 
     public List<Product> findProductsByCategoryId(Integer categoryId) {
         return jdbcTemplate.query("SELECT * FROM " + PRODUCTS_TABLE + " WHERE category_id = ?", new ProductMapper(), categoryId);
+    }
+
+    public List<Product> findPublicProducts(Integer categoryId, String search) {
+        StringBuilder sql = new StringBuilder("SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, c.name AS category_name "
+                + "FROM products p JOIN categories c ON p.category_id = c.id");
+        List<Object> parameters = new ArrayList<>();
+        if (categoryId != null || (search != null && !search.isBlank())) {
+            sql.append(" WHERE ");
+            if (categoryId != null) {
+                sql.append("p.category_id = ?");
+                parameters.add(categoryId);
+            }
+            if (search != null && !search.isBlank()) {
+                if (categoryId != null) {
+                    sql.append(" AND ");
+                }
+                sql.append("LOWER(p.name) LIKE LOWER(?)");
+                parameters.add("%" + search + "%");
+            }
+        }
+        sql.append(" ORDER BY p.id");
+        return jdbcTemplate.query(sql.toString(), new ProductWithCategoryMapper(), parameters.toArray());
+    }
+
+    public Product findPublicProductById(Integer id) {
+        try {
+            String sql = "SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, c.name AS category_name "
+                    + "FROM products p JOIN categories c ON p.category_id = c.id WHERE p.id = ?";
+            return jdbcTemplate.queryForObject(sql, new ProductWithCategoryMapper(), id);
+        } catch (Exception exception) {
+            return null;
+        }
     }
 
     public Product insertProduct(Product product) {

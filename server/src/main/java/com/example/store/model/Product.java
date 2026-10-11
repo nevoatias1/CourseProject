@@ -10,10 +10,15 @@ public class Product {
     private String imageUrl;
     private Integer stock;
     private Integer categoryId;
+    private String categoryName;
 
     public Product() { }
 
     public Product(Integer id, String name, String description, BigDecimal price, String imageUrl, Integer stock, Integer categoryId) {
+        this(id, name, description, price, imageUrl, stock, categoryId, null);
+    }
+
+    public Product(Integer id, String name, String description, BigDecimal price, String imageUrl, Integer stock, Integer categoryId, String categoryName) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -21,6 +26,7 @@ public class Product {
         this.imageUrl = imageUrl;
         this.stock = stock;
         this.categoryId = categoryId;
+        this.categoryName = categoryName;
     }
 
     public Integer getId() { return id; }
@@ -37,4 +43,6 @@ public class Product {
     public void setStock(Integer stock) { this.stock = stock; }
     public Integer getCategoryId() { return categoryId; }
     public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 }
