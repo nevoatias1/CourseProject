@@ -33,7 +33,20 @@ public class UserService {
     public CustomUser getUserByUsername(String username) { return userRepository.findUserByUsername(username); }
     public CustomUser getUserByEmail(String email) { return userRepository.findUserByEmail(email); }
     public List<CustomUser> getAllUsers() { return userRepository.findAllUsers(); }
-    public CustomUser updateUser(CustomUser updatedUser) { return userRepository.updateUser(updatedUser); }
+    public CustomUser updateUser(CustomUser updatedUser) {
+        CustomUser currentUser = getUserByUsername(updatedUser.getUsername());
+        if (currentUser == null) {
+            return null;
+        }
+        updatedUser.setUsername(currentUser.getUsername());
+        updatedUser.setRole(currentUser.getRole());
+        if (updatedUser.getPassword() == null || updatedUser.getPassword().isBlank()) {
+            updatedUser.setPassword(currentUser.getPassword());
+        } else {
+            updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+        return userRepository.updateUser(updatedUser);
+    }
 
     public String deleteUser(String username) {
         CustomUser registeredUser = userRepository.findUserByUsername(username);

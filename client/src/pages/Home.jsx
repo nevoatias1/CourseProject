@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Card, Col, Container, Nav, Row } from 'react-bootstrap'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ApiError, getCategories, getProducts } from '../api.js'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import ProductVisual from '../components/ProductVisual.jsx'
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -10,7 +11,7 @@ function CatalogSkeleton() {
   return <Row xs={1} sm={2} lg={4} className="g-4">{Array.from({ length: 8 }, (_, index) => <Col key={index}><div className="skeleton product-card-skeleton"><div className="skeleton-image" /><div className="skeleton-content"><div className="skeleton-line skeleton-short" /><div className="skeleton-line" /><div className="skeleton-line skeleton-price" /></div></div></Col>)}</Row>
 }
 
-function Home({ currentUser }) {
+function Home({ currentUser, favoriteIds, onFavoriteChange }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const categoryId = searchParams.get('categoryId') || ''
   const search = searchParams.get('search') || ''
@@ -74,14 +75,19 @@ function Home({ currentUser }) {
         {status === 'unreachable' && <CatalogError message={error} onRetry={() => setReloadKey((value) => value + 1)} />}
         {status === 'error' && <CatalogError message={error} onRetry={() => setReloadKey((value) => value + 1)} />}
         {status === 'ready' && products.length === 0 && <EmptyCatalogState onClear={clearFilters} />}
-        {status === 'ready' && products.length > 0 && <Row xs={1} sm={2} lg={4} className="g-4">{products.map((product) => <ProductCard key={product.id} product={product} />)}</Row>}
+        {status === 'ready' && products.length > 0 && <Row xs={1} sm={2} lg={4} className="g-4">{products.map((product) => <ProductCard key={product.id} product={product} currentUser={currentUser} isFavorite={favoriteIds.has(product.id)} onFavoriteChange={onFavoriteChange} />)}</Row>}
       </section>
     </Container>
   )
 }
 
-function ProductCard({ product }) {
-  return <Col><Card as={Link} to={`/products/${product.id}`} className="product-card"><div className="product-image-wrap"><ProductVisual categoryName={product.categoryName} productName={product.name} />{product.stock === 0 && <span className="out-of-stock-badge">Out of stock</span>}</div><Card.Body><div className="product-category">{product.categoryName}</div><Card.Title>{product.name}</Card.Title><div className="product-price">{currency.format(product.price)}</div></Card.Body></Card></Col>
+function ProductCard({ product, currentUser, isFavorite, onFavoriteChange }) {
+  const navigate = useNavigate()
+  function openProduct(event) {
+    if (event.target.closest('button')) return
+    navigate(`/products/${product.id}`)
+  }
+  return <Col><Card className="product-card product-card-interactive" onClick={openProduct}><div className="product-image-wrap"><ProductVisual categoryName={product.categoryName} productName={product.name} /><FavoriteButton productId={product.id} isFavorite={isFavorite} currentUser={currentUser} onFavoriteChange={onFavoriteChange} className="product-card-favorite" />{product.stock === 0 && <span className="out-of-stock-badge">Out of stock</span>}</div><Card.Body><div className="product-category">{product.categoryName}</div><Card.Title>{product.name}</Card.Title><div className="product-price">{currency.format(product.price)}</div></Card.Body></Card></Col>
 }
 
 function CatalogError({ message, onRetry }) {

@@ -81,6 +81,18 @@ export function clearCart() {
   return request('/cart', { method: 'DELETE', requiresAuth: true })
 }
 
+export function getFavorites() {
+  return request('/favorites', { requiresAuth: true })
+}
+
+export function addFavorite(productId) {
+  return request(`/favorites/${productId}`, { method: 'POST', requiresAuth: true })
+}
+
+export function removeFavorite(productId) {
+  return request(`/favorites/${productId}`, { method: 'DELETE', requiresAuth: true })
+}
+
 export function createOrder(shippingAddress) {
   return request('/orders', { method: 'POST', body: JSON.stringify({ shippingAddress }), requiresAuth: true })
 }

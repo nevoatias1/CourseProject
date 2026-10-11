@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Alert, Badge, Button, Col, Container, Row, Spinner } from 'react-bootstrap'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { addToCart, ApiError, getProduct } from '../api.js'
+import FavoriteButton from '../components/FavoriteButton.jsx'
 import ProductVisual from '../components/ProductVisual.jsx'
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -18,7 +19,7 @@ function ProductSkeleton() {
   )
 }
 
-function ProductPage({ currentUser, onCartChange }) {
+function ProductPage({ currentUser, onCartChange, favoriteIds, onFavoriteChange }) {
   const { id } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
@@ -78,8 +79,7 @@ function ProductPage({ currentUser, onCartChange }) {
           </div>
         </Col>
         <Col lg={6}>
-          <div className="eyebrow">{product.categoryName}</div>
-          <h1 className="product-detail-title">{product.name}</h1>
+          <div className="product-detail-heading"><div><div className="eyebrow">{product.categoryName}</div><h1 className="product-detail-title">{product.name}</h1></div><FavoriteButton productId={product.id} isFavorite={favoriteIds.has(product.id)} currentUser={currentUser} onFavoriteChange={onFavoriteChange} className="product-detail-favorite" /></div>
           <div className="product-detail-price">{currency.format(product.price)}</div>
           <p className="product-description">{product.description}</p>
           {product.stock > 0 ? (

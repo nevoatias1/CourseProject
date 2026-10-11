@@ -9,7 +9,8 @@ const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: '
 
 function CheckoutPage({ currentUser, onCartChange }) {
   const [cart, setCart] = useState(null)
-  const [shippingAddress, setShippingAddress] = useState(currentUser.address || '')
+  const [shippingOption, setShippingOption] = useState('saved')
+  const [differentAddress, setDifferentAddress] = useState('')
   const [payment, setPayment] = useState(initialPayment)
   const [error, setError] = useState('')
   const [paying, setPaying] = useState(false)
@@ -35,8 +36,12 @@ function CheckoutPage({ currentUser, onCartChange }) {
     setPayment({ ...payment, [event.target.name]: value })
   }
 
+  function selectedShippingAddress() {
+    return shippingOption === 'saved' ? currentUser.address || '' : differentAddress
+  }
+
   function paymentError() {
-    if (!shippingAddress.trim()) return 'Shipping address is required.'
+    if (!selectedShippingAddress().trim()) return shippingOption === 'saved' ? 'Your saved address is required. Choose a different address or update your profile.' : 'Shipping address is required.'
     if (!payment.cardHolder.trim()) return 'Card holder name is required.'
     if (payment.cardNumber.replace(/\s/g, '').length !== 16) return 'Enter a 16-digit card number.'
     if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(payment.expiry)) return 'Enter expiry as MM/YY.'
@@ -57,7 +62,7 @@ function CheckoutPage({ currentUser, onCartChange }) {
     }
     setPaying(true)
     try {
-      const order = await createOrder(shippingAddress.trim())
+      const order = await createOrder(selectedShippingAddress().trim())
       await onCartChange({ items: [], total: 0 })
       navigate(`/order-confirmation/${order.id}`)
     } catch (requestError) {
@@ -75,7 +80,27 @@ function CheckoutPage({ currentUser, onCartChange }) {
       <div className="eyebrow">CHECKOUT</div><h1>Complete your order</h1>
       <Alert variant="info" className="demo-note"><i className="bi bi-info-circle" /> Demo store – no real payment. Card details stay in this browser and are never sent to the server.</Alert>
       {error && <Alert variant="danger">{error}</Alert>}
-      <Row className="g-4 align-items-start"><Col lg={7}><Form className="checkout-form" onSubmit={submitPayment}><section><h2>Shipping address</h2><Form.Group controlId="shippingAddress"><Form.Label>Address</Form.Label><Form.Control as="textarea" rows={3} value={shippingAddress} onChange={(event) => setShippingAddress(event.target.value)} /></Form.Group></section><section><h2>Demo payment</h2><Form.Group className="mb-3" controlId="cardHolder"><Form.Label>Card holder</Form.Label><Form.Control name="cardHolder" value={payment.cardHolder} onChange={updatePayment} autoComplete="cc-name" /></Form.Group><Form.Group className="mb-3" controlId="cardNumber"><Form.Label>Card number</Form.Label><Form.Control name="cardNumber" inputMode="numeric" value={payment.cardNumber} onChange={updatePayment} placeholder="1234 5678 9012 3456" autoComplete="cc-number" /></Form.Group><Row><Col sm={6}><Form.Group className="mb-3" controlId="expiry"><Form.Label>Expiry</Form.Label><Form.Control name="expiry" inputMode="numeric" value={payment.expiry} onChange={updatePayment} placeholder="MM/YY" autoComplete="cc-exp" /></Form.Group></Col><Col sm={6}><Form.Group className="mb-3" controlId="cvv"><Form.Label>CVV</Form.Label><Form.Control name="cvv" inputMode="numeric" value={payment.cvv} onChange={updatePayment} placeholder="123" autoComplete="cc-csc" /></Form.Group></Col></Row></section><Button type="submit" variant="primary" size="lg" className="w-100" disabled={paying}>{paying ? 'Processing demo payment...' : `Pay ${currency.format(cart.total)}`}</Button></Form></Col><Col lg={5}><aside className="checkout-summary"><h2>Your items</h2>{cart.items.map((item) => <div className="checkout-item" key={item.productId}><ProductVisual productName={item.productName} className="product-visual-checkout" /><div><strong>{item.productName}</strong><span>{item.quantity} × {currency.format(item.price)}</span></div><strong>{currency.format(item.lineTotal)}</strong></div>)}<div className="checkout-total"><span>Total</span><strong>{currency.format(cart.total)}</strong></div></aside></Col></Row>
+      <Row className="g-4 align-items-start">
+        <Col lg={7}>
+          <Form className="checkout-form" onSubmit={submitPayment}>
+            <section>
+              <h2>Shipping address</h2>
+              <Form.Check type="radio" id="savedAddress" name="shippingOption" label="Use my saved address" checked={shippingOption === 'saved'} onChange={() => setShippingOption('saved')} />
+              <div className="saved-address">{currentUser.address || 'No saved address is available.'}</div>
+              <Form.Check className="mt-3" type="radio" id="differentAddress" name="shippingOption" label="Ship to a different address" checked={shippingOption === 'different'} onChange={() => setShippingOption('different')} />
+              {shippingOption === 'different' && <Form.Group className="mt-3" controlId="shippingAddress"><Form.Label>Shipping address</Form.Label><Form.Control as="textarea" rows={3} value={differentAddress} onChange={(event) => setDifferentAddress(event.target.value)} required /></Form.Group>}
+            </section>
+            <section>
+              <h2>Demo payment</h2>
+              <Form.Group className="mb-3" controlId="cardHolder"><Form.Label>Card holder</Form.Label><Form.Control name="cardHolder" value={payment.cardHolder} onChange={updatePayment} autoComplete="cc-name" /></Form.Group>
+              <Form.Group className="mb-3" controlId="cardNumber"><Form.Label>Card number</Form.Label><Form.Control name="cardNumber" inputMode="numeric" value={payment.cardNumber} onChange={updatePayment} placeholder="1234 5678 9012 3456" autoComplete="cc-number" /></Form.Group>
+              <Row><Col sm={6}><Form.Group className="mb-3" controlId="expiry"><Form.Label>Expiry</Form.Label><Form.Control name="expiry" inputMode="numeric" value={payment.expiry} onChange={updatePayment} placeholder="MM/YY" autoComplete="cc-exp" /></Form.Group></Col><Col sm={6}><Form.Group className="mb-3" controlId="cvv"><Form.Label>CVV</Form.Label><Form.Control name="cvv" inputMode="numeric" value={payment.cvv} onChange={updatePayment} placeholder="123" autoComplete="cc-csc" /></Form.Group></Col></Row>
+            </section>
+            <Button type="submit" variant="primary" size="lg" className="w-100" disabled={paying}>{paying ? 'Processing demo payment...' : `Pay ${currency.format(cart.total)}`}</Button>
+          </Form>
+        </Col>
+        <Col lg={5}><aside className="checkout-summary"><h2>Your items</h2>{cart.items.map((item) => <div className="checkout-item" key={item.productId}><ProductVisual productName={item.productName} className="product-visual-checkout" /><div><strong>{item.productName}</strong><span>{item.quantity} × {currency.format(item.price)}</span></div><strong>{currency.format(item.lineTotal)}</strong></div>)}<div className="checkout-total"><span>Total</span><strong>{currency.format(cart.total)}</strong></div></aside></Col>
+      </Row>
     </Container>
   )
 }

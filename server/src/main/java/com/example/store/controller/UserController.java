@@ -3,6 +3,7 @@ package com.example.store.controller;
 import com.example.store.model.CustomUser;
 import com.example.store.service.UserService;
 import com.example.store.utils.JwtUtil;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -62,10 +63,13 @@ public class UserController {
                 return new ResponseEntity("User not updated, first name, last name and email are required", HttpStatus.BAD_REQUEST);
             }
             CustomUser userFromDB = userService.getUserByUsername(updatedUser.getUsername());
+            if (userFromDB == null) {
+                return new ResponseEntity("User not updated. this user does not exist in the system.", HttpStatus.BAD_REQUEST);
+            }
             if (!userFromDB.getEmail().equals(updatedUser.getEmail())) {
                 CustomUser sameEmailUser = userService.getUserByEmail(updatedUser.getEmail());
                 if (sameEmailUser != null) {
-                    return new ResponseEntity("User not updated, This email already exist in the system.", HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity("User not updated. This email already exists in the system.", HttpStatus.CONFLICT);
                 }
             }
             CustomUser user = userService.updateUser(updatedUser);
@@ -73,6 +77,8 @@ public class UserController {
                 return new ResponseEntity("User not updated. this user does not exist in the system.", HttpStatus.BAD_REQUEST);
             }
             return ResponseEntity.ok(user);
+        } catch (DataIntegrityViolationException exception) {
+            return new ResponseEntity("User not updated. This email already exists in the system.", HttpStatus.CONFLICT);
         } catch (Exception exception) {
             return new ResponseEntity(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

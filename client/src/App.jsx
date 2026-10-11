@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { getCart, getCurrentUser } from './api.js'
+import { getCart, getCurrentUser, getFavorites } from './api.js'
+import AccountPage from './pages/AccountPage.jsx'
 import CartPage from './pages/CartPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx'
 import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx'
@@ -14,6 +15,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [loadingUser, setLoadingUser] = useState(true)
   const [cartCount, setCartCount] = useState(0)
+  const [favoriteIds, setFavoriteIds] = useState(new Set())
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -25,6 +27,25 @@ function App() {
     const cart = cartResponse || await getCart()
     setCartCount(cart.items.reduce((total, item) => total + item.quantity, 0))
     return cart
+  }, [])
+
+  const refreshFavorites = useCallback(async () => {
+    if (!localStorage.getItem('token')) {
+      setFavoriteIds(new Set())
+      return []
+    }
+    const favorites = await getFavorites()
+    setFavoriteIds(new Set(favorites.map((product) => product.id)))
+    return favorites
+  }, [])
+
+  const handleFavoriteChange = useCallback((productId, isFavorite) => {
+    setFavoriteIds((currentIds) => {
+      const nextIds = new Set(currentIds)
+      if (isFavorite) nextIds.add(productId)
+      else nextIds.delete(productId)
+      return nextIds
+    })
   }, [])
 
   useEffect(() => {
@@ -43,14 +64,20 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (currentUser) refreshCart().catch(() => {})
-    else setCartCount(0)
-  }, [currentUser, refreshCart])
+    if (currentUser) {
+      refreshCart().catch(() => {})
+      refreshFavorites().catch(() => {})
+    } else {
+      setCartCount(0)
+      setFavoriteIds(new Set())
+    }
+  }, [currentUser, refreshCart, refreshFavorites])
 
   useEffect(() => {
     function handleAuthExpired() {
       setCurrentUser(null)
       setCartCount(0)
+      setFavoriteIds(new Set())
       navigate('/sign-in', { replace: true, state: { from: location } })
     }
     window.addEventListener('auth-expired', handleAuthExpired)
@@ -61,6 +88,7 @@ function App() {
     localStorage.removeItem('token')
     setCurrentUser(null)
     setCartCount(0)
+    setFavoriteIds(new Set())
   }
 
   if (loadingUser) {
@@ -72,11 +100,12 @@ function App() {
       <Navbar currentUser={currentUser} cartCount={cartCount} onLogout={handleLogout} />
       <main>
         <Routes>
-          <Route path="/" element={<Home currentUser={currentUser} />} />
-          <Route path="/products/:id" element={<ProductPage currentUser={currentUser} onCartChange={refreshCart} />} />
+          <Route path="/" element={<Home currentUser={currentUser} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} />} />
+          <Route path="/products/:id" element={<ProductPage currentUser={currentUser} onCartChange={refreshCart} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} />} />
           <Route path="/cart" element={<ProtectedRoute currentUser={currentUser}><CartPage onCartChange={refreshCart} /></ProtectedRoute>} />
           <Route path="/checkout" element={<ProtectedRoute currentUser={currentUser}><CheckoutPage currentUser={currentUser} onCartChange={refreshCart} /></ProtectedRoute>} />
           <Route path="/order-confirmation/:id" element={<ProtectedRoute currentUser={currentUser}><OrderConfirmationPage /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute currentUser={currentUser}><AccountPage currentUser={currentUser} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} onFavoritesRefresh={refreshFavorites} /></ProtectedRoute>} />
           <Route path="/sign-in" element={<SignIn currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
           <Route path="/sign-up" element={<SignUp currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />

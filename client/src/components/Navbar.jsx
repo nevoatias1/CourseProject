@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Container, Form, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
+import { Button, Container, Form, Nav, NavDropdown, Navbar as BootstrapNavbar } from 'react-bootstrap'
 import { Link, NavLink, useNavigate, useSearchParams } from 'react-router-dom'
 
 function Navbar({ currentUser, cartCount, onLogout }) {
@@ -37,8 +37,11 @@ function Navbar({ currentUser, cartCount, onLogout }) {
             </Nav.Link>
             {currentUser ? (
               <>
-                <span className="welcome-copy">Hi, {currentUser.username}</span>
-                <Button variant="light" size="sm" onClick={onLogout}>Log out</Button>
+                <NavDropdown title={`Hi, ${currentUser.username}`} id="account-navigation" align="end">
+                  <NavDropdown.Item as={Link} to="/account?tab=favorites"><i className="bi bi-heart me-2" />Favorites</NavDropdown.Item>
+                  <NavDropdown.Divider />
+                  <NavDropdown.Item as="button" onClick={onLogout}>Log out</NavDropdown.Item>
+                </NavDropdown>
               </>
             ) : (
               <>

@@ -46,8 +46,8 @@ public class UserRepository {
     }
 
     public CustomUser updateUser(CustomUser user) {
-        String sql = String.format("UPDATE %s SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ? WHERE username = ?", USERS_TABLE);
-        jdbcTemplate.update(sql, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(), user.getAddress(), user.getUsername());
+        String sql = String.format("UPDATE %s SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ?, password = ? WHERE username = ?", USERS_TABLE);
+        jdbcTemplate.update(sql, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(), user.getAddress(), user.getPassword(), user.getUsername());
         return findUserByUsername(user.getUsername());
     }
 

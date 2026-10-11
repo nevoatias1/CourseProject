@@ -11,7 +11,7 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (first_name, last_name, email, phone, address, username, password, role) VALUES
-('Miki', 'Gabay', 'mikigabay@gmail.com', '0585236376', '45 Ben Eliezer St', 'mikigabay', '$2a$10$24P9JHWZJm8yRsJRpP4a.e11OvU9ynMvz6XAKJOrxl8Nhph7mojJ2', 'USER'),
+('Nevo', 'Atias', 'nevo@gmail.com', '0500000000', 'Haifa', 'nevoatias1', '$2a$10$OqPr0on8o5C6bfG30p0YzuZ6sK0nq0JKCkNgmsiSQZpf/GgM9GmfS', 'ADMIN'),
 ('Amitay', 'Gabay', 'amitaygabay1@gmail.com', '0504380333', '38 Erez St', 'amitaygabay', '$2a$10$K78Qy75RrDNQcAolPojuM.sI.otXpP23xhZYJ7p2fXrIMoI.k2ehO', 'ADMIN');
 
 CREATE TABLE categories (
