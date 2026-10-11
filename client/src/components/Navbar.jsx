@@ -38,6 +38,8 @@ function Navbar({ currentUser, cartCount, onLogout }) {
             {currentUser ? (
               <>
                 <NavDropdown title={`Hi, ${currentUser.username}`} id="account-navigation" align="end">
+                  <NavDropdown.Item as={Link} to="/account?tab=profile"><i className="bi bi-person me-2" />My account</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/account?tab=orders"><i className="bi bi-box-seam me-2" />My orders</NavDropdown.Item>
                   <NavDropdown.Item as={Link} to="/account?tab=favorites"><i className="bi bi-heart me-2" />Favorites</NavDropdown.Item>
                   <NavDropdown.Divider />
                   <NavDropdown.Item as="button" onClick={onLogout}>Log out</NavDropdown.Item>

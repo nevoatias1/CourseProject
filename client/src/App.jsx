@@ -5,6 +5,7 @@ import AccountPage from './pages/AccountPage.jsx'
 import CartPage from './pages/CartPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx'
 import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx'
+import OrderDetailsPage from './pages/OrderDetailsPage.jsx'
 import Navbar from './components/Navbar.jsx'
 import Home from './pages/Home.jsx'
 import ProductPage from './pages/ProductPage.jsx'
@@ -105,7 +106,8 @@ function App() {
           <Route path="/cart" element={<ProtectedRoute currentUser={currentUser}><CartPage onCartChange={refreshCart} /></ProtectedRoute>} />
           <Route path="/checkout" element={<ProtectedRoute currentUser={currentUser}><CheckoutPage currentUser={currentUser} onCartChange={refreshCart} /></ProtectedRoute>} />
           <Route path="/order-confirmation/:id" element={<ProtectedRoute currentUser={currentUser}><OrderConfirmationPage /></ProtectedRoute>} />
-          <Route path="/account" element={<ProtectedRoute currentUser={currentUser}><AccountPage currentUser={currentUser} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} onFavoritesRefresh={refreshFavorites} /></ProtectedRoute>} />
+          <Route path="/orders/:id" element={<ProtectedRoute currentUser={currentUser}><OrderDetailsPage /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute currentUser={currentUser}><AccountPage currentUser={currentUser} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} onFavoritesRefresh={refreshFavorites} onUserUpdate={setCurrentUser} onLogout={handleLogout} /></ProtectedRoute>} />
           <Route path="/sign-in" element={<SignIn currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
           <Route path="/sign-up" element={<SignUp currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />

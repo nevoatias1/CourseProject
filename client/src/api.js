@@ -45,6 +45,14 @@ export function getCurrentUser() {
   return request('/users', { requiresAuth: true })
 }
 
+export function updateCurrentUser(user) {
+  return request('/users', { method: 'PUT', body: JSON.stringify(user), requiresAuth: true })
+}
+
+export function deleteCurrentUser() {
+  return request('/users', { method: 'DELETE', requiresAuth: true })
+}
+
 export function getCategories() {
   return request('/categories')
 }
@@ -99,4 +107,8 @@ export function createOrder(shippingAddress) {
 
 export function getOrder(id) {
   return request(`/orders/${id}`, { requiresAuth: true })
+}
+
+export function getOrders() {
+  return request('/orders', { requiresAuth: true })
 }
