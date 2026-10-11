@@ -118,6 +118,8 @@ Public routes go in the existing `permitAll` line. Authenticated user routes go 
 
 Checkout takes only a required shipping address from the client. Product prices, order totals, line totals, and stock changes are computed or validated on the server.
 
+Future cart, checkout, and order pages should reuse the client `ProductVisual` component for consistent category icons instead of introducing page-specific product imagery.
+
 ### ADMIN only
 
 - `GET /admin/all-users`

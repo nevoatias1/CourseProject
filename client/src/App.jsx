@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { getCurrentUser } from './api.js'
 import Navbar from './components/Navbar.jsx'
 import Home from './pages/Home.jsx'
+import ProductPage from './pages/ProductPage.jsx'
 import SignIn from './pages/SignIn.jsx'
 import SignUp from './pages/SignUp.jsx'
 
@@ -40,6 +41,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home currentUser={currentUser} />} />
+          <Route path="/products/:id" element={<ProductPage />} />
           <Route path="/sign-in" element={<SignIn currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
           <Route path="/sign-up" element={<SignUp currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { Button, Container, Form, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useSearchParams } from 'react-router-dom'
 
 function Navbar({ currentUser, onLogout }) {
   const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   function submitSearch(event) {
     event.preventDefault()
-    setSearch('')
-    navigate('/')
+    const nextParams = new URLSearchParams(searchParams)
+    if (search.trim()) nextParams.set('search', search.trim())
+    else nextParams.delete('search')
+    navigate(`/${nextParams.toString() ? `?${nextParams.toString()}` : ''}`)
   }
 
   return (

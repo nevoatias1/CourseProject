@@ -40,3 +40,19 @@ export function authenticate(credentials) {
 export function getCurrentUser() {
   return request('/users')
 }
+
+export function getCategories() {
+  return request('/categories')
+}
+
+export function getProducts({ categoryId, search } = {}) {
+  const params = new URLSearchParams()
+  if (categoryId) params.set('categoryId', categoryId)
+  if (search) params.set('search', search)
+  const query = params.toString()
+  return request(`/products${query ? `?${query}` : ''}`)
+}
+
+export function getProduct(id) {
+  return request(`/products/${id}`)
+}
