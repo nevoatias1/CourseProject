@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Badge, Button, Col, Container, Row, Spinner } from 'react-bootstrap'
-import { Link, useParams } from 'react-router-dom'
-import { ApiError, getProduct } from '../api.js'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { addToCart, ApiError, getProduct } from '../api.js'
 import ProductVisual from '../components/ProductVisual.jsx'
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
@@ -18,17 +18,22 @@ function ProductSkeleton() {
   )
 }
 
-function ProductPage() {
+function ProductPage({ currentUser, onCartChange }) {
   const { id } = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState('')
+  const [quantity, setQuantity] = useState(1)
+  const [cartMessage, setCartMessage] = useState('')
+  const [adding, setAdding] = useState(false)
 
   const loadProduct = useCallback(() => {
     setStatus('loading')
     setError('')
     getProduct(id)
-      .then((result) => { setProduct(result); setStatus('ready') })
+      .then((result) => { setProduct(result); setQuantity(1); setStatus('ready') })
       .catch((requestError) => {
         setError(requestError.message)
         setStatus(requestError instanceof ApiError && requestError.status === 404 ? 'not-found' : 'error')
@@ -43,6 +48,24 @@ function ProductPage() {
   }
   if (status === 'error') {
     return <ProductError message={error} onRetry={loadProduct} />
+  }
+
+  async function handleAddToCart() {
+    if (!currentUser) {
+      navigate('/sign-in', { state: { from: location } })
+      return
+    }
+    setAdding(true)
+    setCartMessage('')
+    try {
+      await addToCart(product.id, quantity)
+      await onCartChange()
+      setCartMessage(`${product.name} was added to your cart.`)
+    } catch (requestError) {
+      setCartMessage(requestError.message)
+    } finally {
+      setAdding(false)
+    }
   }
 
   return (
@@ -60,9 +83,9 @@ function ProductPage() {
           <div className="product-detail-price">{currency.format(product.price)}</div>
           <p className="product-description">{product.description}</p>
           {product.stock > 0 ? (
-            <Badge bg="success" className="stock-badge">In stock · {product.stock} available</Badge>
+            <><Badge bg="success" className="stock-badge">In stock · {product.stock} available</Badge><div className="add-to-cart-row"><label htmlFor="productQuantity">Quantity</label><select id="productQuantity" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))}>{Array.from({ length: product.stock }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select><Button variant="primary" onClick={handleAddToCart} disabled={adding}>{adding ? 'Adding...' : 'Add to cart'}</Button></div>{cartMessage && <Alert variant={cartMessage.includes('was added') ? 'success' : 'danger'} className="cart-feedback">{cartMessage}</Alert>}</>
           ) : (
-            <Badge bg="secondary" className="stock-badge">Out of stock</Badge>
+            <><Badge bg="secondary" className="stock-badge">Out of stock</Badge><div className="add-to-cart-row"><Button variant="primary" disabled>Add to cart</Button></div></>
           )}
         </Col>
       </Row>

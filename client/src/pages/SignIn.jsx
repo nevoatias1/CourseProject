@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Alert, Button, Card, Container, Form, Spinner } from 'react-bootstrap'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError, authenticate, getCurrentUser } from '../api.js'
 
 function SignIn({ currentUser, setCurrentUser }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -28,7 +29,8 @@ function SignIn({ currentUser, setCurrentUser }) {
       localStorage.setItem('token', response.jwt)
       const user = await getCurrentUser()
       setCurrentUser(user)
-      navigate('/')
+      const destination = location.state?.from
+      navigate(destination ? `${destination.pathname}${destination.search || ''}` : '/')
     } catch (requestError) {
       localStorage.removeItem('token')
       setError(requestError instanceof ApiError && requestError.status === 403

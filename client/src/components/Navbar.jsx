@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, Container, Form, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
 import { Link, NavLink, useNavigate, useSearchParams } from 'react-router-dom'
 
-function Navbar({ currentUser, onLogout }) {
+function Navbar({ currentUser, cartCount, onLogout }) {
   const [search, setSearch] = useState('')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -31,6 +31,10 @@ function Navbar({ currentUser, onLogout }) {
             <Button type="submit" variant="outline-primary">Search</Button>
           </Form>
           <Nav className="ms-lg-3 align-items-lg-center account-nav">
+            <Nav.Link as={NavLink} to="/cart" className="cart-link" aria-label={`Cart with ${cartCount} items`}>
+              <i className="bi bi-cart3" aria-hidden="true" />
+              {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+            </Nav.Link>
             {currentUser ? (
               <>
                 <span className="welcome-copy">Hi, {currentUser.username}</span>

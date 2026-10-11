@@ -8,7 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, options = {}) {
+async function request(path, { requiresAuth = false, ...options } = {}) {
   const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) }
   const token = localStorage.getItem('token')
   if (token) headers.Authorization = `Bearer ${token}`
@@ -23,6 +23,10 @@ async function request(path, options = {}) {
   const contentType = response.headers.get('content-type') || ''
   const payload = contentType.includes('application/json') ? await response.json() : await response.text()
   if (!response.ok) {
+    if (requiresAuth && (response.status === 401 || response.status === 403)) {
+      localStorage.removeItem('token')
+      window.dispatchEvent(new Event('auth-expired'))
+    }
     const message = typeof payload === 'string' && payload ? payload : payload?.message
     throw new ApiError(message || `Request failed (${response.status}).`, response.status)
   }
@@ -38,7 +42,7 @@ export function authenticate(credentials) {
 }
 
 export function getCurrentUser() {
-  return request('/users')
+  return request('/users', { requiresAuth: true })
 }
 
 export function getCategories() {
@@ -55,4 +59,32 @@ export function getProducts({ categoryId, search } = {}) {
 
 export function getProduct(id) {
   return request(`/products/${id}`)
+}
+
+export function getCart() {
+  return request('/cart', { requiresAuth: true })
+}
+
+export function addToCart(productId, quantity) {
+  return request('/cart', { method: 'POST', body: JSON.stringify({ productId, quantity }), requiresAuth: true })
+}
+
+export function updateCartItem(productId, quantity) {
+  return request(`/cart/${productId}`, { method: 'PUT', body: JSON.stringify({ quantity }), requiresAuth: true })
+}
+
+export function removeCartItem(productId) {
+  return request(`/cart/${productId}`, { method: 'DELETE', requiresAuth: true })
+}
+
+export function clearCart() {
+  return request('/cart', { method: 'DELETE', requiresAuth: true })
+}
+
+export function createOrder(shippingAddress) {
+  return request('/orders', { method: 'POST', body: JSON.stringify({ shippingAddress }), requiresAuth: true })
+}
+
+export function getOrder(id) {
+  return request(`/orders/${id}`, { requiresAuth: true })
 }
