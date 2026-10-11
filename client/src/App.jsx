@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { getCart, getCurrentUser, getFavorites } from './api.js'
 import AccountPage from './pages/AccountPage.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
 import CartPage from './pages/CartPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx'
 import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx'
@@ -108,6 +109,7 @@ function App() {
           <Route path="/order-confirmation/:id" element={<ProtectedRoute currentUser={currentUser}><OrderConfirmationPage /></ProtectedRoute>} />
           <Route path="/orders/:id" element={<ProtectedRoute currentUser={currentUser}><OrderDetailsPage /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute currentUser={currentUser}><AccountPage currentUser={currentUser} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} onFavoritesRefresh={refreshFavorites} onUserUpdate={setCurrentUser} onLogout={handleLogout} /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute currentUser={currentUser}><AdminDashboard currentUser={currentUser} /></AdminRoute>} />
           <Route path="/sign-in" element={<SignIn currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
           <Route path="/sign-up" element={<SignUp currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -120,6 +122,11 @@ function App() {
 function ProtectedRoute({ currentUser, children }) {
   const location = useLocation()
   if (!currentUser) return <Navigate to="/sign-in" replace state={{ from: location }} />
+  return children
+}
+
+function AdminRoute({ currentUser, children }) {
+  if (!currentUser || currentUser.role !== 'ADMIN') return <Navigate to="/" replace />
   return children
 }
 

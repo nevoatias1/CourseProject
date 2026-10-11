@@ -112,3 +112,15 @@ export function getOrder(id) {
 export function getOrders() {
   return request('/orders', { requiresAuth: true })
 }
+
+export function getAdminProducts() { return request('/admin/products', { requiresAuth: true }) }
+export function createAdminProduct(product) { return request('/admin/products', { method: 'POST', body: JSON.stringify(product), requiresAuth: true }) }
+export function updateAdminProduct(id, product) { return request(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(product), requiresAuth: true }) }
+export function deactivateAdminProduct(id) { return request(`/admin/products/${id}`, { method: 'DELETE', requiresAuth: true }) }
+export function restoreAdminProduct(id) { return request(`/admin/products/${id}/restore`, { method: 'PUT', requiresAuth: true }) }
+export function getAdminOrders() { return request('/admin/orders', { requiresAuth: true }) }
+export function getAdminOrder(id) { return request(`/admin/orders/${id}`, { requiresAuth: true }) }
+export function updateAdminOrderStatus(id, status) { return request(`/admin/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }), requiresAuth: true }) }
+export function getAdminUsers() { return request('/admin/all-users', { requiresAuth: true }) }
+export function updateAdminUserRole(username, role) { return request(`/admin/users/${username}/role`, { method: 'PUT', body: JSON.stringify({ role }), requiresAuth: true }) }
+export function deleteAdminUser(username) { return request(`/admin/delete-user/${username}`, { method: 'DELETE', requiresAuth: true }) }

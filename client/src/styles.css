@@ -141,6 +141,18 @@ h1 { color: var(--theme-text); font-size: clamp(2.3rem, 6vw, 4.8rem); font-weigh
 .auth-footer a { color: var(--theme-accent); font-weight: 700; text-decoration: none; }
 .app-loading { align-items: center; color: var(--theme-muted); display: flex; height: 100vh; justify-content: center; }
 .account-page { padding-bottom: 5rem; padding-top: 2.8rem; }
+.admin-page { padding-bottom: 5rem; padding-top: 2.8rem; }
+.admin-panel { background: var(--theme-surface); border: 1px solid var(--theme-border); border-radius: var(--theme-radius); box-shadow: var(--theme-shadow); padding: clamp(1.1rem, 3vw, 1.6rem); }
+.admin-panel-heading { align-items: center; display: flex; gap: 1rem; justify-content: space-between; margin-bottom: 1.25rem; }
+.admin-panel-heading h2 { font-size: 1.3rem; margin: 0; }
+.admin-filter { max-width: 190px; }
+.table-scroll { overflow-x: auto; }
+.admin-table { margin: 0; min-width: 720px; vertical-align: middle; }
+.admin-table th { color: var(--theme-muted); font-size: 0.75rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.admin-table td { white-space: nowrap; }
+.product-visual-admin { border-radius: .45rem; font-size: 1.15rem; max-width: 42px; }
+.admin-actions { display: flex; gap: .45rem; justify-content: flex-end; }
+.admin-skeleton { height: 320px; }
 .account-tabs { border-bottom: 1px solid var(--theme-border); gap: 0.35rem; margin: 2rem 0; padding-bottom: 1rem; }
 .account-tabs .nav-link { color: var(--theme-muted); font-weight: 700; }
 .account-tabs .nav-link.active { background: var(--theme-accent); }
@@ -185,6 +197,7 @@ h1 { color: var(--theme-text); font-size: clamp(2.3rem, 6vw, 4.8rem); font-weigh
   .product-page { padding-top: 1.5rem; }
   .cart-page, .checkout-page, .confirmation-page { padding-top: 1.8rem; }
   .account-page { padding-top: 1.8rem; }
+  .admin-page { padding-top: 1.8rem; }
   .order-details-page { padding-top: 1.8rem; }
   .page-title-row { align-items: flex-start; flex-direction: column; }
   .cart-item { align-items: start; grid-template-columns: 72px minmax(0, 1fr) auto; }
