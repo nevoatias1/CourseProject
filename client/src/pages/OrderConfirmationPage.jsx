@@ -3,8 +3,9 @@ import { Alert, Button, Container, Spinner } from 'react-bootstrap'
 import { Link, useParams } from 'react-router-dom'
 import { getOrder } from '../api.js'
 import ProductVisual from '../components/ProductVisual.jsx'
+import { formatCurrency } from '../utils/formatters.js'
 
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const currency = { format: formatCurrency }
 
 function OrderConfirmationPage() {
   const { id } = useParams()

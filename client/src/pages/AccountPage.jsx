@@ -4,8 +4,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { deleteCurrentUser, getFavorites, getOrders, updateCurrentUser } from '../api.js'
 import FavoriteButton from '../components/FavoriteButton.jsx'
 import ProductVisual from '../components/ProductVisual.jsx'
+import { formatCurrency, formatDateTime as formatDate } from '../utils/formatters.js'
 
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const currency = { format: formatCurrency }
 
 function AccountPage({ currentUser, favoriteIds, onFavoriteChange, onFavoritesRefresh, onUserUpdate, onLogout }) {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -135,6 +136,4 @@ function FavoritesTab({ currentUser, favoriteIds, onFavoriteChange, onFavoritesR
 }
 
 function profileForm(user) { return { first_name: user.first_name || '', last_name: user.last_name || '', email: user.email || '', phone: user.phone || '', address: user.address || '', password: '', confirmPassword: '' } }
-function formatDate(value) { return value ? new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Date unavailable' }
-
 export default AccountPage

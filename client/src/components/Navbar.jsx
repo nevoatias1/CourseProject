@@ -21,7 +21,7 @@ function Navbar({ currentUser, cartCount, onLogout }) {
         <BootstrapNavbar.Brand as={Link} to="/" className="brand-mark">
           <span className="brand-icon">AE</span><span>Atias Express</span>
         </BootstrapNavbar.Brand>
-        <BootstrapNavbar.Toggle aria-controls="main-navigation" />
+        <BootstrapNavbar.Toggle aria-controls="main-navigation" aria-label="Toggle navigation" />
         <BootstrapNavbar.Collapse id="main-navigation">
           <Nav className="me-auto">
             <Nav.Link as={NavLink} to="/" end>Home</Nav.Link>

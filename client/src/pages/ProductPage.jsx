@@ -4,8 +4,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { addToCart, ApiError, getProduct } from '../api.js'
 import FavoriteButton from '../components/FavoriteButton.jsx'
 import ProductVisual from '../components/ProductVisual.jsx'
-
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+import { formatCurrency } from '../utils/formatters.js'
 
 function ProductSkeleton() {
   return (
@@ -80,7 +79,7 @@ function ProductPage({ currentUser, onCartChange, favoriteIds, onFavoriteChange 
         </Col>
         <Col lg={6}>
           <div className="product-detail-heading"><div><div className="eyebrow">{product.categoryName}</div><h1 className="product-detail-title">{product.name}</h1></div><FavoriteButton productId={product.id} isFavorite={favoriteIds.has(product.id)} currentUser={currentUser} onFavoriteChange={onFavoriteChange} className="product-detail-favorite" /></div>
-          <div className="product-detail-price">{currency.format(product.price)}</div>
+          <div className="product-detail-price">{formatCurrency(product.price)}</div>
           <p className="product-description">{product.description}</p>
           {product.stock > 0 ? (
             <><Badge bg="success" className="stock-badge">In stock · {product.stock} available</Badge><div className="add-to-cart-row"><label htmlFor="productQuantity">Quantity</label><select id="productQuantity" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))}>{Array.from({ length: product.stock }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select><Button variant="primary" onClick={handleAddToCart} disabled={adding}>{adding ? 'Adding...' : 'Add to cart'}</Button></div>{cartMessage && <Alert variant={cartMessage.includes('was added') ? 'success' : 'danger'} className="cart-feedback">{cartMessage}</Alert>}</>

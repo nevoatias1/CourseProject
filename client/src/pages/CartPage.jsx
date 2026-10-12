@@ -3,8 +3,9 @@ import { Alert, Button, Container, Spinner } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { clearCart, getCart, removeCartItem, updateCartItem } from '../api.js'
 import ProductVisual from '../components/ProductVisual.jsx'
+import { formatCurrency } from '../utils/formatters.js'
 
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const currency = { format: formatCurrency }
 
 function CartPage({ onCartChange }) {
   const [cart, setCart] = useState(null)
@@ -66,6 +67,7 @@ function CartPage({ onCartChange }) {
     }
   }
 
+  if (!cart && error) return <Container className="cart-page"><div className="catalog-state"><Alert variant="warning"><strong>We couldn't load your cart.</strong><br />{error}</Alert><Button variant="primary" onClick={loadCart}>Try again</Button></div></Container>
   if (!cart) return <Container className="cart-page"><div className="skeleton cart-skeleton" /></Container>
 
   if (cart.items.length === 0) {

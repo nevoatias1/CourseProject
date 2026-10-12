@@ -3,8 +3,9 @@ import { Alert, Badge, Button, Container, Form, Modal, Nav, Spinner, Table } fro
 import { useSearchParams } from 'react-router-dom'
 import { createAdminProduct, deactivateAdminProduct, deleteAdminUser, getAdminOrder, getAdminOrders, getAdminProducts, getAdminUsers, getCategories, restoreAdminProduct, updateAdminOrderStatus, updateAdminProduct, updateAdminUserRole } from '../api.js'
 import ProductVisual from '../components/ProductVisual.jsx'
+import { formatCurrency, formatDateTime as formatDate } from '../utils/formatters.js'
 
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const currency = { format: formatCurrency }
 const emptyProduct = { name: '', description: '', price: '', stock: '', categoryId: '' }
 
 function AdminDashboard({ currentUser }) {
@@ -56,5 +57,4 @@ function ConfirmModal({ state, title, body, actionLabel, variant, onClose, onCon
 function StatusBadge({ status }) { return <Badge bg={status === 'CANCELLED' ? 'secondary' : status === 'DELIVERED' ? 'success' : 'primary'}>{status}</Badge> }
 function Empty({ text }) { return <div className="empty-state"><p>{text}</p></div> }
 function LoadError({ message, retry }) { return <div className="catalog-state"><Alert variant="warning">{message}</Alert><Button onClick={retry}>Try again</Button></div> }
-function formatDate(value) { return value ? new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—' }
 export default AdminDashboard

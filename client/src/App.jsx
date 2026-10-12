@@ -7,11 +7,13 @@ import CartPage from './pages/CartPage.jsx'
 import CheckoutPage from './pages/CheckoutPage.jsx'
 import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx'
 import OrderDetailsPage from './pages/OrderDetailsPage.jsx'
+import Footer from './components/Footer.jsx'
 import Navbar from './components/Navbar.jsx'
 import Home from './pages/Home.jsx'
 import ProductPage from './pages/ProductPage.jsx'
 import SignIn from './pages/SignIn.jsx'
 import SignUp from './pages/SignUp.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -20,6 +22,10 @@ function App() {
   const [favoriteIds, setFavoriteIds] = useState(new Set())
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    document.title = pageTitle(location.pathname, location.search)
+  }, [location.pathname, location.search])
 
   const refreshCart = useCallback(async (cartResponse) => {
     if (!cartResponse && !localStorage.getItem('token')) {
@@ -98,7 +104,7 @@ function App() {
   }
 
   return (
-    <>
+    <div className="app-shell">
       <Navbar currentUser={currentUser} cartCount={cartCount} onLogout={handleLogout} />
       <main>
         <Routes>
@@ -112,11 +118,28 @@ function App() {
           <Route path="/admin" element={<AdminRoute currentUser={currentUser}><AdminDashboard currentUser={currentUser} /></AdminRoute>} />
           <Route path="/sign-in" element={<SignIn currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
           <Route path="/sign-up" element={<SignUp currentUser={currentUser} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
-    </>
+      <Footer />
+    </div>
   )
+}
+
+function pageTitle(pathname, search) {
+  const accountTab = new URLSearchParams(search).get('tab')
+  const page = pathname === '/' ? ''
+    : pathname === '/cart' ? 'Cart'
+      : pathname === '/checkout' ? 'Checkout'
+        : pathname === '/account' ? accountTab === 'orders' ? 'My orders' : accountTab === 'favorites' ? 'Favorites' : 'My account'
+          : pathname === '/admin' ? 'Admin'
+            : pathname === '/sign-in' ? 'Sign in'
+              : pathname === '/sign-up' ? 'Sign up'
+                : pathname.startsWith('/products/') ? 'Product'
+                  : pathname.startsWith('/orders/') ? 'Order details'
+                    : pathname.startsWith('/order-confirmation/') ? 'Order confirmed'
+                      : 'Page not found'
+  return page ? `${page} | Atias Express` : 'Atias Express'
 }
 
 function ProtectedRoute({ currentUser, children }) {

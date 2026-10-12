@@ -48,3 +48,4 @@ a:hover { color: var(--theme-accent-hover); }
   --bs-btn-active-border-color: var(--theme-accent-hover);
 }
 .form-control:focus { border-color: var(--theme-accent); box-shadow: 0 0 0 0.2rem var(--bs-focus-ring-color); }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 2px; }

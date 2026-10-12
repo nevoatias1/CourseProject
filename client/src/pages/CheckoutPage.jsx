@@ -3,9 +3,10 @@ import { Alert, Button, Col, Container, Form, Row } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { createOrder, getCart } from '../api.js'
 import ProductVisual from '../components/ProductVisual.jsx'
+import { formatCurrency } from '../utils/formatters.js'
 
 const initialPayment = { cardHolder: '', cardNumber: '', expiry: '', cvv: '' }
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const currency = { format: formatCurrency }
 
 function CheckoutPage({ currentUser, onCartChange }) {
   const [cart, setCart] = useState(null)
@@ -72,6 +73,7 @@ function CheckoutPage({ currentUser, onCartChange }) {
     }
   }
 
+  if (!cart && error) return <Container className="cart-page"><div className="catalog-state"><Alert variant="warning"><strong>We couldn't load checkout.</strong><br />{error}</Alert><Button variant="primary" onClick={loadCart}>Try again</Button></div></Container>
   if (!cart) return <Container className="cart-page"><div className="skeleton cart-skeleton" /></Container>
   if (cart.items.length === 0) return <Container className="cart-page"><div className="empty-state"><div className="empty-state-icon"><i className="bi bi-cart3" /></div><h2>Your cart is empty</h2><p>Add products before checking out.</p><Button as={Link} to="/" variant="primary">Go to the store</Button></div></Container>
 
