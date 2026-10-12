@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: ${PORT:9000}
 
 spring:
   main:
@@ -16,5 +16,8 @@ spring:
       enabled: true
       path: /h2-console
 jwt:
-  secret: your_jwt_secret_key
+  secret: ${JWT_SECRET:your_jwt_secret_key}
   expiration: 36000000
+
+cors:
+  origins: ${CORS_ORIGINS:http://localhost:3000}
