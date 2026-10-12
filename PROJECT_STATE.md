@@ -2,158 +2,137 @@
 
 ## Project goal
 
-Build an online electronics and gadgets store with a Spring Boot backend and a React frontend. The backend provides authentication, product/category browsing, user shopping data, and order checkout; the React client will be added in Stage 5.
+Atias Express is an online electronics and gadgets store with a Spring Boot/JDBC backend and a React client. The completed application supports public catalog browsing, JWT accounts, favorites, cart and simulated checkout, customer order history, and an ADMIN dashboard for products, inventory, orders, and users.
 
 ## Stack and versions
 
 - Java 21
-- Spring Boot 3.3.4
-- Maven Wrapper (`mvnw`, `mvnw.cmd`)
-- Spring Web, Security, JDBC, Actuator, and H2
-- JJWT 0.9.1
-- H2 in-memory database for local development
-- MySQL connector 8.0.28 is present in the Maven dependencies for compatibility with the reference project
-- The reference dependency set still includes Spring Data JPA, but application persistence is implemented with JDBC repositories and `data.sql`; no JPA entities or repositories are used
+- Spring Boot 3.3.4 and Maven Wrapper
+- Spring Web, Spring Security, Spring JDBC, Actuator, H2, and JJWT 0.9.1
+- MySQL connector remains in the reference dependency set; local development uses H2
+- Spring Data JPA is present as a dependency for reference compatibility, but no JPA entities or repositories are used
+- React 18.3.1, Vite 5.4.10, React Router 6.28.0
+- Bootstrap 5.3.3, React-Bootstrap 2.10.5, Bootstrap Icons
+- Client uses `fetch`; no Redux, Context API, or Axios
 
 ## Architecture
 
-The server follows the lecturer's `spring-boot-security` project structure and keeps its security configuration with minimal changes. Requests flow through controller → service → JDBC repository → RowMapper. `data.sql` creates and seeds the database.
+The server is based on the lecturer's `spring-boot-security` project. Its package structure and security configuration are preserved with minimal changes. Requests follow controller → service → JDBC repository → RowMapper. Database tables and local seed data are defined in `server/src/main/resources/data.sql`.
 
-The base package is `com.example.store` with these subpackages:
-
-- `controller`
-- `model`
-- `security`
-- `service`
-- `repository`
-- `repository.mapper`
-- `utils`
+The client uses route components and prop-passed auth state in `App`. API calls are centralized in `client/src/api.js`. `ProductVisual` is the shared category-icon visual for catalog, cart, checkout, confirmation, favorites, orders, and admin product views. `styles/theme.css` centralizes the visual theme.
 
 ## Folder structure
 
 ```text
 CourseProject/
 ├── server/
-│   ├── .mvn/
-│   ├── mvnw, mvnw.cmd
-│   ├── pom.xml
+│   ├── .mvn/, mvnw, mvnw.cmd, pom.xml
 │   └── src/
 │       ├── main/java/com/example/store/
 │       │   ├── controller/
 │       │   ├── model/
+│       │   ├── repository/mapper/
 │       │   ├── repository/
-│       │   │   └── mapper/
 │       │   ├── security/
 │       │   ├── service/
 │       │   └── utils/
-│       ├── main/resources/
-│       │   ├── application.yaml
-│       │   └── data.sql
+│       ├── main/resources/application.yaml
+│       ├── main/resources/data.sql
 │       └── test/java/com/example/store/
+├── client/
+│   ├── src/api.js
+│   ├── src/components/
+│   ├── src/pages/
+│   ├── src/styles/
+│   └── package.json
 ├── .gitignore
 ├── README.md
-└── client/ (planned; not created yet)
+└── PROJECT_STATE.md
 ```
 
 ## Completed stages
 
-- Stage 1: security base, JWT authentication, user model, roles, H2 setup, and user/admin endpoints.
-- Stage 2: JDBC database layer for categories, products, favorites, carts, orders, and order items; seeded catalog data.
-- Stage 3: public read-only category and product API with category filtering and case-insensitive name search.
-- Stage 4a: authenticated cart and favorites APIs with JWT-derived ownership, quantity validation, and stock limits.
-- Stage 4b: transactional authenticated order checkout, stock decrement, order history, and order detail retrieval.
-- Stage 5: next; create the React app in `client/` and connect login/register.
+- Stage 1 — security base, user model, roles, JWT authentication, H2, user endpoints, and initial admin endpoint.
+- Stage 2 — JDBC models, repositories, mappers, schema, and seed data for categories, products, favorites, carts, orders, and order items.
+- Stage 3 — public categories/products API with category filtering and case-insensitive search.
+- Stage 4a — authenticated cart and favorites API with JWT-derived ownership, validation, and stock limits.
+- Stage 4b — transactional checkout, conditional stock decrement, order history, order details, and rollback tests.
+- Stage 5 — React/Vite client, sign-up/sign-in, JWT persistence, profile loading, logout, and responsive store shell.
+- Stage 6 — product catalog and product details with URL-backed search/category filters and loading/error/empty states.
+- Stage 7 — cart and simulated checkout UI, payment validation, shipping-address choice, confirmation page, cart badge, and token-expiration handling.
+- Stage 8a — secured profile update behavior: username and role are immutable through `PUT /users`, optional BCrypt password replacement, and email conflict handling.
+- Stage 8b — favorites UI across cards/product pages/account, guest sign-in return flow, and saved/different checkout address selection.
+- Stage 9a — ADMIN API: product soft delete/restore, product validation, order administration/status transitions, stock restoration on cancellation, and user role/delete protections.
+- Stage 9b — ADMIN dashboard UI for products, orders, statuses, and users.
+- Stage 10a — client polish: responsive hamburger navigation, 404 page, footer, URL-backed catalog sorting, shared formatting, page titles, focus styles, and cleanup.
 
 ## Database schema
 
-`src/main/resources/data.sql` creates and seeds:
+`data.sql` creates and seeds:
 
-- `users`: username (`VARCHAR`) is the primary key; email is unique; role is `USER` or `ADMIN`.
-- `categories`: auto-increment integer primary key and unique name.
-- `products`: auto-increment primary key, name, description, decimal price, image URL, stock, and category foreign key.
-- `favorites`: composite primary key `(username, product_id)`.
-- `cart_items`: composite primary key `(username, product_id)` and quantity.
-- `orders`: auto-increment primary key, username, creation timestamp, server-calculated total, status, and shipping address.
-- `order_items`: composite primary key `(order_id, product_id)`, quantity, and snapshotted unit price.
+- `users`: `username` is the String primary key; email is unique; roles are `USER` and `ADMIN`.
+- `categories`: auto-increment ID and unique name.
+- `products`: ID, name, description, price, `image_url`, stock, category foreign key, and `active` soft-delete flag.
+- `favorites`: composite `(username, product_id)` key.
+- `cart_items`: composite `(username, product_id)` key and quantity.
+- `orders`: ID, username, timestamp, server-calculated total, status, and shipping address.
+- `order_items`: composite `(order_id, product_id)` key, quantity, and snapshotted unit price.
 
-User and order foreign keys cascade on delete as defined in the schema. The seed contains two users, six categories, and 24 products (four per category).
+User and order foreign keys cascade on delete as defined in the schema. Seed data includes two ADMIN users, six categories, and 24 products. `products.image_url` exists for schema compatibility but the client uses category icons instead.
 
 ## Auth/authorization state
 
-Authentication uses `POST /authenticate`, `AuthenticationService`, `CustomUserDetailsService`, `JwtUtil`, and `JwtRequestFilter`. Sessions are stateless. The JWT username is the sole source of identity for user-scoped operations; it is never accepted from a URL, query parameter, or request body.
+`POST /authenticate` authenticates through `AuthenticationService`, `CustomUserDetailsService`, BCrypt, `JwtUtil`, and `JwtRequestFilter`. Sessions are stateless. Registration always saves `USER`, and passwords are never logged.
 
-`CustomUser` keeps `username` as the String primary key; there is no user ID. Roles are `USER` and `ADMIN`. Registration ignores a client-supplied role and always saves `USER`. Passwords are BCrypt encoded and are not logged.
+Identity for all user-scoped operations comes only from the JWT username. It is never accepted from a URL, query parameter, or request body. Public routes are added to the existing `permitAll` matcher; customer routes use the existing `hasAnyAuthority("USER", "ADMIN")` matcher; admin routes require `ADMIN`. CORS allows `http://localhost:3000`.
 
-Public routes go in the existing `permitAll` line. Authenticated user routes go in the existing `hasAnyAuthority("USER", "ADMIN")` line. Admin routes use `hasAuthority("ADMIN")`. CORS allows `http://localhost:3000`.
+Role changes and account deletion take effect for authorization only after the affected user's JWT expires or the user logs in again, because existing tokens retain their original claims.
 
 ## Endpoints
 
 ### Public
 
-- `POST /authenticate`
-- `POST /users/register`
-- `GET /categories`
-- `GET /products`
-- `GET /products/{id}`
-- `/h2-console/**`
+`POST /authenticate`, `POST /users/register`, `GET /categories`, `GET /products`, `GET /products/{id}`, and `/h2-console/**`.
 
-`GET /products` supports optional `categoryId` and case-insensitive `search` query parameters.
+`GET /products` accepts optional `categoryId` and case-insensitive `search`. Only active products are public; inactive products return 404.
 
 ### USER or ADMIN
 
-- `GET /users`
-- `PUT /users`
-- `DELETE /users`
-- `GET /cart`
-- `POST /cart`
-- `PUT /cart/{productId}`
-- `DELETE /cart/{productId}`
-- `DELETE /cart`
-- `GET /favorites`
-- `POST /favorites/{productId}`
-- `DELETE /favorites/{productId}`
-- `POST /orders`
-- `GET /orders`
-- `GET /orders/{id}`
+`GET /users`, `PUT /users`, `DELETE /users`; `GET /cart`, `POST /cart`, `PUT /cart/{productId}`, `DELETE /cart/{productId}`, `DELETE /cart`; `GET /favorites`, `POST /favorites/{productId}`, `DELETE /favorites/{productId}`; `POST /orders`, `GET /orders`, and `GET /orders/{id}`.
 
-Checkout takes only a required shipping address from the client. Product prices, order totals, line totals, and stock changes are computed or validated on the server.
-
-Future cart, checkout, and order pages should reuse the client `ProductVisual` component for consistent category icons instead of introducing page-specific product imagery.
+Checkout accepts only a required shipping address from the client. Prices, totals, and stock changes are server-side. Checkout is transactional and rejects inactive products or insufficient stock with a full rollback.
 
 ### ADMIN only
 
-- `GET /admin/all-users`
-- `DELETE /admin/delete-user/{username}`
+`GET /admin/all-users`, `DELETE /admin/delete-user/{username}`, `PUT /admin/users/{username}/role`, `GET/POST /admin/products`, `PUT /admin/products/{id}`, `DELETE /admin/products/{id}`, `PUT /admin/products/{id}/restore`, `GET /admin/orders`, `GET /admin/orders/{id}`, and `PUT /admin/orders/{id}/status`.
+
+Products are never hard-deleted through the admin API. Cancellation restores each order item's stock. Admins cannot demote or delete themselves.
 
 ## Tests and verification status
 
-`./mvnw.cmd clean verify` currently passes. The suite includes the context test plus three checkout integration tests covering:
+The server has Spring context and checkout/security integration coverage, including successful checkout, insufficient-stock rollback, user-order isolation, role protection, soft-deleted product behavior, cancellation stock restoration, and admin self-protection. The expected verification command is `server/.\mvnw.cmd clean verify`.
 
-- successful order creation, order items, stock reduction, and cart clearing;
-- insufficient stock returning 400 with order, stock, and cart changes rolled back;
-- one user receiving 404 when attempting to read another user's order.
+The client verification commands are `npm run lint` and `npm run build` from `client/`. The application is designed to run on port 9000 (server) and port 3000 (client).
 
-The packaged application starts on port 9000, and anonymous `GET /products` returns the seeded 24-product catalog. The temporary verification server was stopped after testing.
+## Known limitations
 
-## Known issues
-
-- Order history displays live product names from `products`; prices are snapshotted in `order_items`.
-- Local development uses an in-memory H2 database, so data disappears on restart.
-- The current reference dependency set includes JPA even though the application intentionally uses JDBC and no JPA persistence model.
-- Products are currently represented by hard deletes in the repository layer. The planned policy is to never hard-delete products; Stage 9 will introduce an admin-controlled soft delete.
+- Role changes and account deletion affect authorization only after the user's JWT expires or they log in again.
+- H2 is in-memory locally; all local data resets when the server restarts.
+- Order history shows live product names from the products table; prices are snapshotted in `order_items`.
+- `products.image_url` exists but is unused in the client; category icons are used instead.
+- Payment is simulated; no real payment provider is integrated.
+- The local JWT secret and demo credentials are development values and must be replaced for deployment.
 
 ## Next step
 
-Stage 5: create the React application in `client/` and connect login and registration first, then public catalog and authenticated store flows.
+Stage 11 — deployment: PostgreSQL via Spring profiles, the server on Render using Docker, and the client on Netlify.
 
 ## AI handoff
 
-Continue preserving the lecturer-reference package structure and the minimal-change security configuration. Do not introduce JPA repositories or move user identity into request data. Keep public routes in the existing `permitAll` matcher and secured USER/ADMIN routes in its existing authority matcher. All cart, favorite, and order ownership must be derived from the JWT. Keep pricing and totals server-side.
-
-The planned deployment is PostgreSQL via Spring profiles, with the server deployed on Render using Docker and the React client deployed on Netlify. Payment is a simple simulation only; no real payment provider is planned.
+Preserve the lecturer-reference package structure, JDBC/data.sql persistence approach, and existing security matcher organization. Keep usernames derived from JWT claims and keep prices/totals server-side. New client product displays should reuse `ProductVisual`; do not reintroduce manufacturer image dependencies unless the product-image strategy is intentionally redesigned.
 
 ## Open questions
 
-- Which product fields should be retained in historical order items beyond the current snapshotted price (for example, a product-name snapshot)?
-- What exact soft-delete field and admin workflow should Stage 9 use?
-- Which PostgreSQL profile values and Render/Netlify environment variables should be finalized before deployment?
+- Which PostgreSQL schema/profile values, Render service settings, and Netlify environment variables should be finalized for deployment?
+- Should historical order items eventually snapshot product names as well as prices?
+- Should JWT refresh/revocation be added so role changes and account deletion can invalidate existing tokens immediately?
