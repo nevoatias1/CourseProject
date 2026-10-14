@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 
 @Repository
@@ -36,11 +35,11 @@ public class CategoryRepository {
         String sql = "INSERT INTO " + CATEGORIES_TABLE + " (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement(sql, new String[]{"id"});
             statement.setString(1, category.getName());
             return statement;
         }, keyHolder);
-        category.setId(keyHolder.getKey().intValue());
+        category.setId(GeneratedKeySupport.requiredId(keyHolder));
         return category;
     }
 

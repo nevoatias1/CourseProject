@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -74,7 +73,7 @@ public class ProductRepository {
         String sql = "INSERT INTO " + PRODUCTS_TABLE + " (name, description, price, image_url, stock, category_id, active) VALUES (?, ?, ?, ?, ?, ?, TRUE)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement(sql, new String[]{"id"});
             statement.setString(1, product.getName());
             statement.setString(2, product.getDescription());
             statement.setBigDecimal(3, product.getPrice());
@@ -83,7 +82,7 @@ public class ProductRepository {
             statement.setInt(6, product.getCategoryId());
             return statement;
         }, keyHolder);
-        product.setId(keyHolder.getKey().intValue());
+        product.setId(GeneratedKeySupport.requiredId(keyHolder));
         return product;
     }
 

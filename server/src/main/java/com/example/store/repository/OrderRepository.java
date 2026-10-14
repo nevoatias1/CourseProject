@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 
 @Repository
@@ -48,7 +47,7 @@ public class OrderRepository {
         String sql = "INSERT INTO " + ORDERS_TABLE + " (username, created_at, total, status, shipping_address) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement statement = connection.prepareStatement(sql, new String[]{"id"});
             statement.setString(1, order.getUsername());
             statement.setTimestamp(2, order.getCreatedAt());
             statement.setBigDecimal(3, order.getTotal());
@@ -56,7 +55,7 @@ public class OrderRepository {
             statement.setString(5, order.getShippingAddress());
             return statement;
         }, keyHolder);
-        order.setId(keyHolder.getKey().intValue());
+        order.setId(GeneratedKeySupport.requiredId(keyHolder));
         return order;
     }
 
