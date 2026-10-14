@@ -15,6 +15,10 @@ Atias Express is an online electronics and gadgets store with a Spring Boot/JDBC
 - Bootstrap 5.3.3, React-Bootstrap 2.10.5, Bootstrap Icons
 - Client uses `fetch`; no Redux, Context API, or Axios
 
+Deployment architecture: the React client is deployed on Netlify, the Dockerized Spring Boot server is deployed on Render, and production persistence uses Neon PostgreSQL. Local development continues to use H2, `data.sql`, port 9000, and the Vite client on port 3000.
+
+Deployment environment variable names (values are intentionally not stored here): `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `JWT_SECRET`, `CORS_ORIGINS`, `PORT`, and client-side `VITE_API_URL`.
+
 ## Architecture
 
 The server is based on the lecturer's `spring-boot-security` project. Its package structure and security configuration are preserved with minimal changes. Requests follow controller → service → JDBC repository → RowMapper. Database tables and local seed data are defined in `server/src/main/resources/data.sql`.
@@ -66,6 +70,10 @@ CourseProject/
 - Stage 9b — ADMIN dashboard UI for products, orders, statuses, and users.
 - Stage 10a — client polish: responsive hamburger navigation, 404 page, footer, URL-backed catalog sorting, shared formatting, page titles, focus styles, and cleanup.
 
+## Stage 11 — deployment complete
+
+Deployment preparation and production hardening now include the PostgreSQL profile/schema, prod-only admin initialization, Render Dockerfile, Netlify SPA redirect, generated-key compatibility across H2/PostgreSQL, and deployment configuration for Netlify, Render, and Neon PostgreSQL.
+
 ## Database schema
 
 `data.sql` creates and seeds:
@@ -114,6 +122,8 @@ The server has Spring context and checkout/security integration coverage, includ
 
 The client verification commands are `npm run lint` and `npm run build` from `client/`. The application is designed to run on port 9000 (server) and port 3000 (client).
 
+The verified concurrency result for the last available stock unit is: two users attempted checkout concurrently; exactly one order was created, the other request returned 400, and there was no oversell or partial data change.
+
 ## Known limitations
 
 - Role changes and account deletion affect authorization only after the user's JWT expires or they log in again.
@@ -124,6 +134,8 @@ The client verification commands are `npm run lint` and `npm run build` from `cl
 - The local JWT secret and demo credentials are development values and must be replaced for deployment.
 
 ## Next step
+
+Stage 11 is complete. Next steps are operational: configure production variables, deploy the Docker server to Render with Neon PostgreSQL, deploy the client to Netlify, and run a real production checkout smoke test.
 
 Stage 11 — deployment: PostgreSQL via Spring profiles, the server on Render using Docker, and the client on Netlify.
 

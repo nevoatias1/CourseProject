@@ -21,7 +21,15 @@ async function request(path, { requiresAuth = false, verifyTokenOnForbidden = tr
   }
 
   const contentType = response.headers.get('content-type') || ''
-  const payload = contentType.includes('application/json') ? await response.json() : await response.text()
+  const responseBody = await response.text()
+  let payload = responseBody
+  if (contentType.includes('application/json') && responseBody) {
+    try {
+      payload = JSON.parse(responseBody)
+    } catch {
+      payload = responseBody
+    }
+  }
   if (!response.ok) {
     if (requiresAuth && response.status === 401) {
       localStorage.removeItem('token')
@@ -42,10 +50,18 @@ async function request(path, { requiresAuth = false, verifyTokenOnForbidden = tr
         window.dispatchEvent(new Event('auth-expired'))
       }
     }
-    const message = typeof payload === 'string' && payload ? payload : payload?.message
+    const message = getErrorMessage(payload, response.status)
     throw new ApiError(message || `Request failed (${response.status}).`, response.status)
   }
   return payload
+}
+
+function getErrorMessage(payload, status) {
+  if (typeof payload === 'string') return payload.trim()
+  if (payload && typeof payload === 'object') {
+    return String(payload.message || payload.error || '').trim()
+  }
+  return `Request failed (${status}).`
 }
 
 export function registerUser(user) {

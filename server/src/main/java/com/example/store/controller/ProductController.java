@@ -1,6 +1,7 @@
 package com.example.store.controller;
 
 import com.example.store.model.Product;
+import com.example.store.model.ApiErrorResponse;
 import com.example.store.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +32,10 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Integer id) {
+    public ResponseEntity<?> getProductById(@PathVariable Integer id) {
         Product product = productService.getPublicProductById(id);
         if (product == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse("Product not found"));
         }
         return ResponseEntity.ok(product);
     }

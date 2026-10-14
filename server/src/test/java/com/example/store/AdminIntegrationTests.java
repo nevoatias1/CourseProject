@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 class AdminIntegrationTests {
@@ -111,7 +112,8 @@ class AdminIntegrationTests {
         assertEquals(product.getStock(), productRepository.findProductById(product.getId()).getStock());
         mockMvc.perform(put("/admin/orders/{id}/status", order.getId()).header("Authorization", bearerToken(ADMIN))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"DELIVERED\"}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid order status transition"));
     }
 
     @Test

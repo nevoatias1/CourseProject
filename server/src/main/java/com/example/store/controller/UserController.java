@@ -1,6 +1,7 @@
 package com.example.store.controller;
 
 import com.example.store.model.CustomUser;
+import com.example.store.model.ApiErrorResponse;
 import com.example.store.service.UserService;
 import com.example.store.utils.JwtUtil;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,72 +31,72 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody CustomUser user) {
+    public ResponseEntity<?> register(@RequestBody CustomUser user) {
         try {
             String result = userService.register(user);
             if (result.contains("successfully")) {
                 return new ResponseEntity<>(result, HttpStatus.CREATED);
             }
-            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiErrorResponse(result), HttpStatus.BAD_REQUEST);
         } catch (Exception exception) {
-            return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiErrorResponse("An unexpected error occurred."), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<CustomUser> getUserByUsername(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getUserByUsername(@RequestHeader("Authorization") String token) {
         try {
             String username = jwtUtil.extractUsername(token.substring(7));
             return ResponseEntity.ok(userService.getUserByUsername(username));
         } catch (Exception exception) {
-            return new ResponseEntity(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiErrorResponse("An unexpected error occurred."), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PutMapping
-    public ResponseEntity<CustomUser> updateUser(@RequestHeader("Authorization") String token, @RequestBody CustomUser updatedUser) {
+    public ResponseEntity<?> updateUser(@RequestHeader("Authorization") String token, @RequestBody CustomUser updatedUser) {
         try {
             String username = jwtUtil.extractUsername(token.substring(7));
             updatedUser.setUsername(username);
             if (updatedUser.getFirstName() == null || updatedUser.getLastName() == null || updatedUser.getEmail() == null) {
-                return new ResponseEntity("User not updated, first name, last name and email are required", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApiErrorResponse("User not updated, first name, last name and email are required"), HttpStatus.BAD_REQUEST);
             }
             CustomUser userFromDB = userService.getUserByUsername(updatedUser.getUsername());
             if (userFromDB == null) {
-                return new ResponseEntity("User not updated. this user does not exist in the system.", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApiErrorResponse("User not updated. This user does not exist in the system."), HttpStatus.BAD_REQUEST);
             }
             if (!userFromDB.getEmail().equals(updatedUser.getEmail())) {
                 CustomUser sameEmailUser = userService.getUserByEmail(updatedUser.getEmail());
                 if (sameEmailUser != null) {
-                    return new ResponseEntity("User not updated. This email already exists in the system.", HttpStatus.CONFLICT);
+                    return new ResponseEntity<>(new ApiErrorResponse("User not updated. This email already exists in the system."), HttpStatus.CONFLICT);
                 }
             }
             CustomUser user = userService.updateUser(updatedUser);
             if (user == null) {
-                return new ResponseEntity("User not updated. this user does not exist in the system.", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApiErrorResponse("User not updated. This user does not exist in the system."), HttpStatus.BAD_REQUEST);
             }
             return ResponseEntity.ok(user);
         } catch (DataIntegrityViolationException exception) {
-            return new ResponseEntity("User not updated. This email already exists in the system.", HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ApiErrorResponse("User not updated. This email already exists in the system."), HttpStatus.CONFLICT);
         } catch (Exception exception) {
-            return new ResponseEntity(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiErrorResponse("An unexpected error occurred."), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @DeleteMapping
-    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String token) {
         try {
             String username = jwtUtil.extractUsername(token.substring(7));
             String result = userService.deleteUser(username);
             if (result.contains("successfully")) {
                 return new ResponseEntity<>(result, HttpStatus.OK);
             }
-            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiErrorResponse(result), HttpStatus.BAD_REQUEST);
         } catch (Exception exception) {
-            return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiErrorResponse("An unexpected error occurred."), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -1,5 +1,11 @@
+Live site: `<NETLIFY_URL>`  
+API: `<RENDER_URL>`  
+Note: the free server sleeps after inactivity; the first request can take up to a minute.  
+Production admin credentials are set via environment variables and are not stored in this repository. The local H2 demo password is for local development only.
+
 # Atias Express
 
+Local demo admin (H2 only): nevoatias1 / nevo1234
 Atias Express is a full-stack online electronics and gadgets store. Guests can browse the catalog and search or filter products. Registered customers can manage their profile, favorites, cart, checkout, and order history. Administrators can manage products, inventory, order statuses, and users through an admin dashboard.
 
 ## Features
@@ -67,9 +73,9 @@ Prerequisites: Java 21, Node.js/npm, and a PowerShell terminal on Windows.
 
 3. Optional H2 console: open `http://localhost:9000/h2-console` and use JDBC URL `jdbc:h2:mem:mydb`, user `sa`, password `password`.
 
-Demo admin account seeded locally:
+Demo admin username seeded locally:
 
-- `nevoatias1` / `nevo1234` (Nevo Atias, `ADMIN`)
+- `nevoatias1` (Nevo Atias, `ADMIN`; local password is intentionally not documented as a production credential)
 
 To create a regular customer, use **Sign up** in the client or `POST /users/register`. Registration always stores the new account as `USER`, regardless of any role value supplied by a client.
 

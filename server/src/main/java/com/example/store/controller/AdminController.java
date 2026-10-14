@@ -1,6 +1,7 @@
 package com.example.store.controller;
 
 import com.example.store.model.CustomUser;
+import com.example.store.model.ApiErrorResponse;
 import com.example.store.model.Order;
 import com.example.store.model.OrderDetails;
 import com.example.store.model.OrderStatusRequest;
@@ -54,12 +55,12 @@ public class AdminController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/delete-user/{username}")
-    public ResponseEntity<String> deleteAnotherUser(@RequestHeader("Authorization") String token, @PathVariable String username) {
+    public ResponseEntity<?> deleteAnotherUser(@RequestHeader("Authorization") String token, @PathVariable String username) {
         if (extractUsername(token).equals(username)) {
-            return ResponseEntity.badRequest().body("An admin cannot delete their own account");
+            return ResponseEntity.badRequest().body(new ApiErrorResponse("An admin cannot delete their own account"));
         }
         String result = userService.deleteUser(username);
-        return result.contains("successfully") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        return result.contains("successfully") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(new ApiErrorResponse(result));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -67,13 +68,13 @@ public class AdminController {
     public ResponseEntity<?> updateUserRole(@RequestHeader("Authorization") String token, @PathVariable String username,
                                              @RequestBody RoleUpdateRequest request) {
         if (extractUsername(token).equals(username)) {
-            return ResponseEntity.badRequest().body("An admin cannot change their own role");
+            return ResponseEntity.badRequest().body(new ApiErrorResponse("An admin cannot change their own role"));
         }
         if (request == null || request.getRole() == null) {
-            return ResponseEntity.badRequest().body("Role must be USER or ADMIN");
+            return ResponseEntity.badRequest().body(new ApiErrorResponse("Role must be USER or ADMIN"));
         }
         CustomUser user = userService.updateUserRole(username, request.getRole());
-        return user == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found") : ResponseEntity.ok(user);
+        return user == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse("User not found")) : ResponseEntity.ok(user);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

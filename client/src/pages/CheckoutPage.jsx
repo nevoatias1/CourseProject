@@ -67,7 +67,9 @@ function CheckoutPage({ currentUser, onCartChange }) {
       await onCartChange({ items: [], total: 0 })
       navigate(`/order-confirmation/${order.id}`)
     } catch (requestError) {
-      setError(requestError.message)
+      const message = requestError.message.replace(/^Insufficient stock for product:\s*/i, 'Not enough stock for ')
+      await loadCart()
+      setError(message)
     } finally {
       setPaying(false)
     }

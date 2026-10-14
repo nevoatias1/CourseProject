@@ -40,11 +40,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 username = jwtUtil.extractUsername(jwt);
             } catch (ExpiredJwtException exception) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token has expired");
+                writeError(response, "Token has expired");
                 return;
             } catch (Exception exception) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Invalid token");
+                writeError(response, "Invalid token");
                 return;
             }
         }
@@ -59,14 +59,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 } else {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    writeError(response, "Invalid JWT token");
                     return;
                 }
             } catch (Exception exception) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                writeError(response, "Authentication failed");
                 return;
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private void writeError(HttpServletResponse response, String message) throws IOException {
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 }

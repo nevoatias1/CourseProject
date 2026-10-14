@@ -2,6 +2,7 @@ package com.example.store.controller;
 
 import com.example.store.model.AuthenticationRequest;
 import com.example.store.model.AuthenticationResponse;
+import com.example.store.model.ApiErrorResponse;
 import com.example.store.service.AuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class AuthenticationController {
             AuthenticationResponse authResponse = authenticationService.createAuthenticationToken(authenticationRequest);
             return ResponseEntity.ok(authResponse);
         } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Incorrect Username Or Password");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiErrorResponse("Incorrect username or password"));
         }
     }
 }
