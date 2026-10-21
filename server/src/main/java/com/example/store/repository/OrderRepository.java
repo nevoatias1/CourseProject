@@ -65,8 +65,4 @@ public class OrderRepository {
         return findOrderById(order.getId());
     }
 
-    public String deleteOrder(Integer id) {
-        jdbcTemplate.update("DELETE FROM " + ORDERS_TABLE + " WHERE id = ?", id);
-        return "Order deleted successfully";
-    }
 }

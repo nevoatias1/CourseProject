@@ -54,7 +54,7 @@ function SignUp({ currentUser }) {
     <Container className="auth-shell sign-up-shell">
       <Card className="auth-card">
         <Card.Body>
-          <div className="eyebrow">JOIN NORTHSTAR</div>
+          <div className="eyebrow">JOIN ATIAS EXPRESS</div>
           <h1>Create your account</h1>
           <p className="muted-copy">Save your details now and shop with less friction later.</p>
           {error && <Alert variant="danger">{error}</Alert>}

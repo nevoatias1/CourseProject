@@ -16,10 +16,6 @@ public class OrderItemRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<OrderItem> findAllOrderItems() {
-        return jdbcTemplate.query("SELECT * FROM " + ORDER_ITEMS_TABLE, new OrderItemMapper());
-    }
-
     public List<OrderItem> findOrderItemsByOrderId(Integer orderId) {
         return jdbcTemplate.query("SELECT * FROM " + ORDER_ITEMS_TABLE + " WHERE order_id = ?", new OrderItemMapper(), orderId);
     }
@@ -39,14 +35,4 @@ public class OrderItemRepository {
         return orderItem;
     }
 
-    public OrderItem updateOrderItem(OrderItem orderItem) {
-        jdbcTemplate.update("UPDATE " + ORDER_ITEMS_TABLE + " SET quantity = ?, unit_price = ? WHERE order_id = ? AND product_id = ?",
-                orderItem.getQuantity(), orderItem.getUnitPrice(), orderItem.getOrderId(), orderItem.getProductId());
-        return findOrderItemByOrderIdAndProductId(orderItem.getOrderId(), orderItem.getProductId());
-    }
-
-    public String deleteOrderItem(Integer orderId, Integer productId) {
-        jdbcTemplate.update("DELETE FROM " + ORDER_ITEMS_TABLE + " WHERE order_id = ? AND product_id = ?", orderId, productId);
-        return "Order item deleted successfully";
-    }
 }

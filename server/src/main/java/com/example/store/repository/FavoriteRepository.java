@@ -16,10 +16,6 @@ public class FavoriteRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<Favorite> findAllFavorites() {
-        return jdbcTemplate.query("SELECT * FROM " + FAVORITES_TABLE, new FavoriteMapper());
-    }
-
     public List<Favorite> findFavoritesByUsername(String username) {
         return jdbcTemplate.query("SELECT * FROM " + FAVORITES_TABLE + " WHERE username = ?", new FavoriteMapper(), username);
     }

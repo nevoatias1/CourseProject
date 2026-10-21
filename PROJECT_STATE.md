@@ -30,7 +30,7 @@ The client uses route components and prop-passed auth state in `App`. API calls 
 ```text
 CourseProject/
 ├── server/
-│   ├── .mvn/, mvnw, mvnw.cmd, pom.xml
+│   ├── mvnw, mvnw.cmd, pom.xml, Dockerfile, .dockerignore
 │   └── src/
 │       ├── main/java/com/example/store/
 │       │   ├── controller/
@@ -41,7 +41,10 @@ CourseProject/
 │       │   ├── service/
 │       │   └── utils/
 │       ├── main/resources/application.yaml
+│       ├── main/resources/application-prod.yaml
 │       ├── main/resources/data.sql
+│       ├── main/resources/data-postgresql.sql
+│       ├── main/resources/schema-postgresql.sql
 │       └── test/java/com/example/store/
 ├── client/
 │   ├── src/api.js
@@ -50,6 +53,7 @@ CourseProject/
 │   ├── src/styles/
 │   └── package.json
 ├── .gitignore
+├── netlify.toml
 ├── README.md
 └── PROJECT_STATE.md
 ```
@@ -86,13 +90,13 @@ Deployment preparation and production hardening now include the PostgreSQL profi
 - `orders`: ID, username, timestamp, server-calculated total, status, and shipping address.
 - `order_items`: composite `(order_id, product_id)` key, quantity, and snapshotted unit price.
 
-User and order foreign keys cascade on delete as defined in the schema. Seed data includes two ADMIN users, six categories, and 24 products. `products.image_url` exists for schema compatibility but the client uses category icons instead.
+User and order foreign keys cascade on delete as defined in the schema. Seed data includes one local ADMIN user (`nevoatias1`), six categories, and 24 products. `products.image_url` exists for schema compatibility but the client uses category icons instead.
 
 ## Auth/authorization state
 
 `POST /authenticate` authenticates through `AuthenticationService`, `CustomUserDetailsService`, BCrypt, `JwtUtil`, and `JwtRequestFilter`. Sessions are stateless. Registration always saves `USER`, and passwords are never logged.
 
-Identity for all user-scoped operations comes only from the JWT username. It is never accepted from a URL, query parameter, or request body. Public routes are added to the existing `permitAll` matcher; customer routes use the existing `hasAnyAuthority("USER", "ADMIN")` matcher; admin routes require `ADMIN`. CORS allows `http://localhost:3000`.
+Identity for all user-scoped operations comes only from the JWT username. It is never accepted from a URL, query parameter, or request body. Public routes are added to the existing `permitAll` matcher; customer routes use the existing `hasAnyAuthority("USER", "ADMIN")` matcher; admin routes require `ADMIN`. CORS uses `CORS_ORIGINS`, defaulting to `http://localhost:3000`.
 
 Role changes and account deletion take effect for authorization only after the affected user's JWT expires or the user logs in again, because existing tokens retain their original claims.
 
@@ -132,12 +136,6 @@ The verified concurrency result for the last available stock unit is: two users 
 - `products.image_url` exists but is unused in the client; category icons are used instead.
 - Payment is simulated; no real payment provider is integrated.
 - The local JWT secret and demo credentials are development values and must be replaced for deployment.
-
-## Next step
-
-Stage 11 is complete. Next steps are operational: configure production variables, deploy the Docker server to Render with Neon PostgreSQL, deploy the client to Netlify, and run a real production checkout smoke test.
-
-Stage 11 — deployment: PostgreSQL via Spring profiles, the server on Render using Docker, and the client on Netlify.
 
 ## AI handoff
 

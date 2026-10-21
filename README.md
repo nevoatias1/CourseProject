@@ -1,5 +1,4 @@
-Live site: `<NETLIFY_URL>`  
-API: `<RENDER_URL>`  
+Live site: https://atias-express.netlify.app  
 Note: the free server sleeps after inactivity; the first request can take up to a minute.  
 Production admin credentials are set via environment variables and are not stored in this repository. The local H2 demo password is for local development only.
 
@@ -27,6 +26,8 @@ Client: React 18.3.1, Vite 5.4.10, React Router 6.28.0, React-Bootstrap 2.10.5, 
 CourseProject/
 ├── server/                         Spring Boot REST API
 │   ├── pom.xml
+│   ├── Dockerfile
+│   ├── .dockerignore
 │   └── src/
 │       ├── main/java/com/example/store/
 │       │   ├── controller/          HTTP endpoints
@@ -37,13 +38,17 @@ CourseProject/
 │       │   └── utils/               JWT utility classes
 │       └── main/resources/
 │           ├── application.yaml
-│           └── data.sql
+│           ├── application-prod.yaml
+│           ├── data.sql
+│           ├── data-postgresql.sql
+│           └── schema-postgresql.sql
 ├── client/                         React/Vite application
 │   ├── src/api.js                   All client API calls
 │   ├── src/components/              Navbar, footer, ProductVisual, favorites
 │   ├── src/pages/                   Catalog, auth, account, cart, checkout, admin
 │   └── src/styles/                  Central theme
 ├── .gitignore
+├── netlify.toml
 ├── README.md
 └── PROJECT_STATE.md
 ```
@@ -69,7 +74,7 @@ Prerequisites: Java 21, Node.js/npm, and a PowerShell terminal on Windows.
    npm run dev
    ```
 
-   Vite runs at `http://localhost:3000`, the origin allowed by the server CORS configuration. The client defaults to `http://localhost:9000`; set `VITE_API_URL` if the API uses another URL.
+   Vite runs at `http://localhost:3000`. Server CORS uses the `CORS_ORIGINS` environment variable, defaulting to `http://localhost:3000`. The client defaults to `http://localhost:9000`; set `VITE_API_URL` if the API uses another URL.
 
 3. Optional H2 console: open `http://localhost:9000/h2-console` and use JDBC URL `jdbc:h2:mem:mydb`, user `sa`, password `password`.
 

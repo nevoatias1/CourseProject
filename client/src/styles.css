@@ -21,7 +21,6 @@ main { flex: 1; }
 .account-nav { gap: 0.7rem; }
 .cart-link { align-items: center; display: inline-flex; font-size: 1.1rem; position: relative; }
 .cart-count { align-items: center; background: var(--theme-accent); border: 2px solid #fff; border-radius: 999px; color: #fff; display: inline-flex; font-size: 0.65rem; font-weight: 800; height: 1.2rem; justify-content: center; line-height: 1; margin-left: -0.25rem; min-width: 1.2rem; padding: 0 0.2rem; transform: translateY(-0.5rem); }
-.welcome-copy { color: var(--theme-muted); font-size: 0.92rem; }
 .sign-in-link { border: 1px solid var(--theme-accent); border-radius: 0.45rem; color: var(--theme-accent) !important; padding-inline: 0.9rem !important; }
 .sign-in-link:hover { background: var(--theme-accent); color: #fff !important; }
 .page-shell { padding-top: 4.5rem; padding-bottom: 4rem; }
@@ -32,7 +31,6 @@ main { flex: 1; }
 h1 { color: var(--theme-text); font-size: clamp(2.3rem, 6vw, 4.8rem); font-weight: 800; letter-spacing: -0.055em; line-height: 1.03; margin-bottom: 1.2rem; }
 .hero-copy { color: var(--theme-muted); font-size: 1.2rem; line-height: 1.65; max-width: 580px; }
 .hero-note { color: var(--theme-muted); font-weight: 600; margin-top: 2rem; }
-.welcome-alert { display: inline-block; margin-top: 1.5rem; }
 .catalog-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: 1.2rem; gap: 1rem; }
 .catalog-heading h2 { color: var(--theme-text); font-size: 1.6rem; letter-spacing: -0.03em; margin: 0; }
 .filter-summary { color: var(--theme-muted); font-size: 0.9rem; }

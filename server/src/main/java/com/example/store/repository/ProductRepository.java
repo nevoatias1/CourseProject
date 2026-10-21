@@ -33,10 +33,6 @@ public class ProductRepository {
         }
     }
 
-    public List<Product> findProductsByCategoryId(Integer categoryId) {
-        return jdbcTemplate.query("SELECT * FROM " + PRODUCTS_TABLE + " WHERE category_id = ?", new ProductMapper(), categoryId);
-    }
-
     public List<Product> findPublicProducts(Integer categoryId, String search) {
         StringBuilder sql = new StringBuilder("SELECT p.id, p.name, p.description, p.price, p.image_url, p.stock, p.category_id, p.active, c.name AS category_name "
                 + "FROM products p JOIN categories c ON p.category_id = c.id WHERE p.active = TRUE");
@@ -106,8 +102,4 @@ public class ProductRepository {
         return findProductById(id);
     }
 
-    public String deleteProduct(Integer id) {
-        setProductActive(id, false);
-        return "Product deactivated successfully";
-    }
 }

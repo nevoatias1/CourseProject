@@ -16,10 +16,6 @@ public class CartItemRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<CartItem> findAllCartItems() {
-        return jdbcTemplate.query("SELECT * FROM " + CART_ITEMS_TABLE, new CartItemMapper());
-    }
-
     public List<CartItem> findCartItemsByUsername(String username) {
         return jdbcTemplate.query("SELECT * FROM " + CART_ITEMS_TABLE + " WHERE username = ?", new CartItemMapper(), username);
     }
