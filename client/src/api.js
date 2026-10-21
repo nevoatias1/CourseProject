@@ -1,4 +1,6 @@
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:9000').replace(/\/$/, '')
+const RETRY_DELAYS = [1000, 3000, 7000, 15000, 30000]
+const SERVER_UNAVAILABLE_MESSAGE = 'The server is not responding right now. Please try again in a minute.'
 
 export class ApiError extends Error {
   constructor(message, status = 0) {
@@ -13,12 +15,7 @@ async function request(path, { requiresAuth = false, verifyTokenOnForbidden = tr
   const token = localStorage.getItem('token')
   if (token) headers.Authorization = `Bearer ${token}`
 
-  let response
-  try {
-    response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
-  } catch {
-    throw new ApiError('The server is unreachable. Please check that the backend is running and try again.')
-  }
+  const response = await fetchWithRetry(`${API_BASE_URL}${path}`, { ...options, headers })
 
   const contentType = response.headers.get('content-type') || ''
   const responseBody = await response.text()
@@ -54,6 +51,35 @@ async function request(path, { requiresAuth = false, verifyTokenOnForbidden = tr
     throw new ApiError(message || `Request failed (${response.status}).`, response.status)
   }
   return payload
+}
+
+async function fetchWithRetry(url, options) {
+  let retrying = false
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt += 1) {
+    try {
+      const response = await fetch(url, options)
+      if (retrying) emitServerWaking(false)
+      return response
+    } catch {
+      const delay = RETRY_DELAYS[attempt]
+      if (delay === undefined) {
+        emitServerWaking(false)
+        throw new ApiError(SERVER_UNAVAILABLE_MESSAGE)
+      }
+      if (!retrying) {
+        retrying = true
+        emitServerWaking(true)
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+  throw new ApiError(SERVER_UNAVAILABLE_MESSAGE)
+}
+
+function emitServerWaking(waking) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('server-waking', { detail: { waking } }))
+  }
 }
 
 function getErrorMessage(payload, status) {

@@ -20,6 +20,7 @@ function App() {
   const [loadingUser, setLoadingUser] = useState(true)
   const [cartCount, setCartCount] = useState(0)
   const [favoriteIds, setFavoriteIds] = useState(new Set())
+  const [serverWaking, setServerWaking] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -92,6 +93,14 @@ function App() {
     return () => window.removeEventListener('auth-expired', handleAuthExpired)
   }, [location, navigate])
 
+  useEffect(() => {
+    function handleServerWaking(event) {
+      setServerWaking(Boolean(event.detail?.waking))
+    }
+    window.addEventListener('server-waking', handleServerWaking)
+    return () => window.removeEventListener('server-waking', handleServerWaking)
+  }, [])
+
   function handleLogout() {
     localStorage.removeItem('token')
     setCurrentUser(null)
@@ -100,12 +109,16 @@ function App() {
   }
 
   if (loadingUser) {
-    return <div className="app-loading">Loading your store...</div>
+    return <>
+      {serverWaking && <div className="server-waking-notice" role="status" aria-live="polite">Waking up the server, this can take up to a minute...</div>}
+      <div className="app-loading">Loading your store...</div>
+    </>
   }
 
   return (
     <div className="app-shell">
       <Navbar currentUser={currentUser} cartCount={cartCount} onLogout={handleLogout} />
+      {serverWaking && <div className="server-waking-notice" role="status" aria-live="polite">Waking up the server, this can take up to a minute...</div>}
       <main>
         <Routes>
           <Route path="/" element={<Home currentUser={currentUser} favoriteIds={favoriteIds} onFavoriteChange={handleFavoriteChange} />} />
