@@ -4,7 +4,12 @@
 body { margin: 0; min-width: 320px; }
 .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
 main { flex: 1; }
-.server-waking-notice { align-items: center; background: #eff6ff; border-bottom: 1px solid #bfdbfe; color: var(--theme-accent); display: flex; font-size: 0.88rem; font-weight: 700; gap: 0.5rem; justify-content: center; padding: 0.65rem 1rem; text-align: center; }
+.server-waking-notice { align-items: center; background: #fff7ed; border-bottom: 1px solid #fdba74; color: #9a3412; display: flex; font-size: 0.92rem; font-weight: 800; gap: 0.55rem; justify-content: center; min-height: 3rem; padding: 0.7rem 1rem; text-align: center; width: 100%; }
+.server-waking-notice::before { content: '\f33b'; font-family: 'bootstrap-icons'; font-size: 1.05rem; }
+.server-waking-notice::after { animation: server-waking-spin 0.9s linear infinite; border: 2px solid #fed7aa; border-top-color: #ea580c; border-radius: 50%; content: ''; height: 0.9rem; width: 0.9rem; }
+.alert.alert-danger { align-items: center; background: #fef2f2; border-color: #fca5a5; border-radius: 0; color: #991b1b; display: flex; font-weight: 700; gap: 0.55rem; margin-left: 0; margin-right: 0; width: 100%; }
+.alert.alert-danger::before { content: '\f333'; font-family: 'bootstrap-icons'; font-size: 1.05rem; }
+@keyframes server-waking-spin { to { transform: rotate(360deg); } }
 .store-navbar { background: #fff; border-bottom: 1px solid var(--theme-border); box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04); padding: 0.8rem 0; position: sticky; top: 0; z-index: 1030; }
 .brand-mark { align-items: center; color: var(--theme-text) !important; display: inline-flex; font-weight: 800; gap: 0.45rem; letter-spacing: -0.03em; font-size: 1.18rem; }
 .brand-mark:hover { color: var(--theme-accent) !important; }
