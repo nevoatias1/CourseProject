@@ -99,7 +99,7 @@ function ProductCard({ product, currentUser, isFavorite, onFavoriteChange }) {
     if (event.target.closest('button')) return
     navigate(`/products/${product.id}`)
   }
-  return <Col><Card className="product-card product-card-interactive" onClick={openProduct}><div className="product-image-wrap"><ProductVisual categoryName={product.categoryName} productName={product.name} /><FavoriteButton productId={product.id} isFavorite={isFavorite} currentUser={currentUser} onFavoriteChange={onFavoriteChange} className="product-card-favorite" />{product.stock === 0 && <span className="out-of-stock-badge">Out of stock</span>}</div><Card.Body><div className="product-category">{product.categoryName}</div><Card.Title>{product.name}</Card.Title><div className="product-price">{formatCurrency(product.price)}</div></Card.Body></Card></Col>
+  return <Col><Card className="product-card product-card-interactive" onClick={openProduct}><div className="product-image-wrap"><ProductVisual categoryName={product.categoryName} productName={product.name} imageUrl={product.imageUrl} /><FavoriteButton productId={product.id} isFavorite={isFavorite} currentUser={currentUser} onFavoriteChange={onFavoriteChange} className="product-card-favorite" />{product.stock === 0 && <span className="out-of-stock-badge">Out of stock</span>}</div><Card.Body><div className="product-category">{product.categoryName}</div><Card.Title>{product.name}</Card.Title><div className="product-price">{formatCurrency(product.price)}</div></Card.Body></Card></Col>
 }
 
 function CatalogError({ message, onRetry }) {

@@ -11,7 +11,7 @@ export class ApiError extends Error {
 }
 
 async function request(path, { requiresAuth = false, verifyTokenOnForbidden = true, ...options } = {}) {
-  const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) }
+  const headers = { ...(options.body && !(options.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) }
   const token = localStorage.getItem('token')
   if (token) headers.Authorization = `Bearer ${token}`
 
@@ -126,6 +126,10 @@ export function getProduct(id) {
   return request(`/products/${id}`)
 }
 
+export function getApiImageUrl(imageUrl) {
+  return imageUrl ? `${API_BASE_URL}${imageUrl}` : null
+}
+
 export function getCart() {
   return request('/cart', { requiresAuth: true })
 }
@@ -173,6 +177,12 @@ export function getOrders() {
 export function getAdminProducts() { return request('/admin/products', { requiresAuth: true }) }
 export function createAdminProduct(product) { return request('/admin/products', { method: 'POST', body: JSON.stringify(product), requiresAuth: true }) }
 export function updateAdminProduct(id, product) { return request(`/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(product), requiresAuth: true }) }
+export function uploadProductImage(id, blob) {
+  const formData = new FormData()
+  formData.append('file', blob, blob.type === 'image/jpeg' ? 'product.jpg' : 'product.webp')
+  return request(`/admin/products/${id}/image`, { method: 'PUT', body: formData, requiresAuth: true })
+}
+export function deleteProductImage(id) { return request(`/admin/products/${id}/image`, { method: 'DELETE', requiresAuth: true }) }
 export function deactivateAdminProduct(id) { return request(`/admin/products/${id}`, { method: 'DELETE', requiresAuth: true }) }
 export function restoreAdminProduct(id) { return request(`/admin/products/${id}/restore`, { method: 'PUT', requiresAuth: true }) }
 export function getAdminOrders() { return request('/admin/orders', { requiresAuth: true }) }

@@ -103,7 +103,7 @@ function CheckoutPage({ currentUser, onCartChange }) {
             <Button type="submit" variant="primary" size="lg" className="w-100" disabled={paying}>{paying ? 'Processing demo payment...' : `Pay ${currency.format(cart.total)}`}</Button>
           </Form>
         </Col>
-        <Col lg={5}><aside className="checkout-summary"><h2>Your items</h2>{cart.items.map((item) => <div className="checkout-item" key={item.productId}><ProductVisual productName={item.productName} className="product-visual-checkout" /><div><strong>{item.productName}</strong><span>{item.quantity} × {currency.format(item.price)}</span></div><strong>{currency.format(item.lineTotal)}</strong></div>)}<div className="checkout-total"><span>Total</span><strong>{currency.format(cart.total)}</strong></div></aside></Col>
+        <Col lg={5}><aside className="checkout-summary"><h2>Your items</h2>{cart.items.map((item) => <div className="checkout-item" key={item.productId}><ProductVisual productName={item.productName} imageUrl={item.imageUrl} className="product-visual-checkout" /><div><strong>{item.productName}</strong><span>{item.quantity} × {currency.format(item.price)}</span></div><strong>{currency.format(item.lineTotal)}</strong></div>)}<div className="checkout-total"><span>Total</span><strong>{currency.format(cart.total)}</strong></div></aside></Col>
       </Row>
     </Container>
   )

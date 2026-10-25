@@ -74,7 +74,7 @@ function ProductPage({ currentUser, onCartChange, favoriteIds, onFavoriteChange 
       <Row className="g-5 align-items-center">
         <Col lg={6}>
           <div className="product-detail-image-wrap">
-            <ProductVisual categoryName={product.categoryName} productName={product.name} detail />
+            <ProductVisual categoryName={product.categoryName} productName={product.name} imageUrl={product.imageUrl} detail />
           </div>
         </Col>
         <Col lg={6}>

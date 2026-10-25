@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Badge, Button, Container, Form, Modal, Nav, Spinner, Table } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
-import { createAdminProduct, deactivateAdminProduct, deleteAdminUser, getAdminOrder, getAdminOrders, getAdminProducts, getAdminUsers, getCategories, restoreAdminProduct, updateAdminOrderStatus, updateAdminProduct, updateAdminUserRole } from '../api.js'
+import { createAdminProduct, deactivateAdminProduct, deleteAdminUser, deleteProductImage, getAdminOrder, getAdminOrders, getAdminProducts, getAdminUsers, getCategories, restoreAdminProduct, updateAdminOrderStatus, updateAdminProduct, updateAdminUserRole, uploadProductImage } from '../api.js'
 import ProductVisual from '../components/ProductVisual.jsx'
 import { formatCurrency, formatDateTime as formatDate } from '../utils/formatters.js'
+import { formatImageSize, processProductImage } from '../utils/imageProcessing.js'
 
 const currency = { format: formatCurrency }
 const emptyProduct = { name: '', description: '', price: '', stock: '', categoryId: '' }
@@ -15,21 +16,152 @@ function AdminDashboard({ currentUser }) {
 }
 
 function ProductsTab() {
-  const [products, setProducts] = useState([]); const [categories, setCategories] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [editing, setEditing] = useState(null); const [confirm, setConfirm] = useState(null)
-  const load = useCallback(() => { setLoading(true); setError(''); Promise.all([getAdminProducts(), getCategories()]).then(([p, c]) => { setProducts(p); setCategories(c) }).catch((e) => setError(e.message)).finally(() => setLoading(false)) }, [])
+  const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [editing, setEditing] = useState(null)
+  const [confirm, setConfirm] = useState(null)
+
+  const load = useCallback(() => {
+    setLoading(true)
+    setError('')
+    Promise.all([getAdminProducts(), getCategories()])
+      .then(([nextProducts, nextCategories]) => { setProducts(nextProducts); setCategories(nextCategories) })
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false))
+  }, [])
+
   useEffect(() => { load() }, [load])
-  async function toggle(product) { try { if (product.active) await deactivateAdminProduct(product.id); else await restoreAdminProduct(product.id); setConfirm(null); load() } catch (e) { setError(e.message); setConfirm(null) } }
+
+  async function toggle(product) {
+    try {
+      if (product.active) await deactivateAdminProduct(product.id)
+      else await restoreAdminProduct(product.id)
+      setConfirm(null)
+      load()
+    } catch (requestError) {
+      setError(requestError.message)
+      setConfirm(null)
+    }
+  }
+
   if (loading) return <div className="skeleton admin-skeleton" />
   if (error) return <LoadError message={error} retry={load} />
+
   const categoryName = (id) => categories.find((category) => category.id === id)?.name || 'Uncategorized'
-  return <><section className="admin-panel"><div className="admin-panel-heading"><h2>Products</h2><Button onClick={() => setEditing({ ...emptyProduct })}><i className="bi bi-plus-lg" /> Add product</Button></div>{products.length === 0 ? <Empty text="No products yet." /> : <div className="table-scroll"><Table hover className="admin-table"><thead><tr><th>Product</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th /></tr></thead><tbody>{products.map((product) => <tr key={product.id}><td><ProductVisual productName={product.name} categoryName={categoryName(product.categoryId)} className="product-visual-admin" /></td><td>{product.name}</td><td>{categoryName(product.categoryId)}</td><td>{currency.format(product.price)}</td><td>{product.stock}</td><td><Badge bg={product.active ? 'success' : 'secondary'}>{product.active ? 'Active' : 'Inactive'}</Badge></td><td className="admin-actions"><Button size="sm" variant="outline-primary" onClick={() => setEditing({ ...product, price: String(product.price), stock: String(product.stock) })}>Edit</Button><Button size="sm" variant={product.active ? 'outline-danger' : 'outline-success'} onClick={() => setConfirm({ product })}>{product.active ? 'Deactivate' : 'Restore'}</Button></td></tr>)}</tbody></Table></div>}</section>{editing && <ProductModal product={editing} categories={categories} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}<ConfirmModal state={confirm} title={confirm?.product.active ? 'Deactivate product?' : 'Restore product?'} body={confirm?.product.active ? 'This product will disappear from the public catalog and can no longer be added to carts.' : 'This product will become available in the public catalog again.'} actionLabel={confirm?.product.active ? 'Deactivate' : 'Restore'} variant={confirm?.product.active ? 'danger' : 'success'} onClose={() => setConfirm(null)} onConfirm={() => toggle(confirm.product)} /></>
+
+  return <>
+    <section className="admin-panel">
+      <div className="admin-panel-heading"><h2>Products</h2><Button onClick={() => setEditing({ ...emptyProduct })}><i className="bi bi-plus-lg" /> Add product</Button></div>
+      {products.length === 0 ? <Empty text="No products yet." /> : <div className="table-scroll"><Table hover className="admin-table"><thead><tr><th>Product</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th /></tr></thead><tbody>{products.map((product) => <tr key={product.id}>
+        <td><ProductVisual productName={product.name} categoryName={categoryName(product.categoryId)} imageUrl={product.imageUrl} className="product-visual-admin" /></td>
+        <td>{product.name}</td><td>{categoryName(product.categoryId)}</td><td>{currency.format(product.price)}</td><td>{product.stock}</td>
+        <td><Badge bg={product.active ? 'success' : 'secondary'}>{product.active ? 'Active' : 'Inactive'}</Badge></td>
+        <td className="admin-actions"><Button size="sm" variant="outline-primary" onClick={() => setEditing({ ...product, price: String(product.price), stock: String(product.stock) })}>Edit</Button><Button size="sm" variant={product.active ? 'outline-danger' : 'outline-success'} onClick={() => setConfirm({ product })}>{product.active ? 'Deactivate' : 'Restore'}</Button></td>
+      </tr>)}</tbody></Table></div>}
+    </section>
+    {editing && <ProductModal product={editing} categories={categories} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
+    <ConfirmModal state={confirm} title={confirm?.product.active ? 'Deactivate product?' : 'Restore product?'} body={confirm?.product.active ? 'This product will disappear from the public catalog and can no longer be added to carts.' : 'This product will become available in the public catalog again.'} actionLabel={confirm?.product.active ? 'Deactivate' : 'Restore'} variant={confirm?.product.active ? 'danger' : 'success'} onClose={() => setConfirm(null)} onConfirm={() => toggle(confirm.product)} />
+  </>
 }
 
 function ProductModal({ product, categories, onClose, onSaved }) {
-  const [form, setForm] = useState(product); const [error, setError] = useState(''); const [saving, setSaving] = useState(false); const isEdit = Boolean(product.id)
-  function update(event) { setForm((value) => ({ ...value, [event.target.name]: event.target.value })) }
-  async function save(event) { event.preventDefault(); setError(''); if (!form.name.trim()) return setError('Product name is required.'); if (!(Number(form.price) > 0)) return setError('Price must be greater than 0.'); if (!Number.isInteger(Number(form.stock)) || Number(form.stock) < 0) return setError('Stock must be a whole number of at least 0.'); if (!form.categoryId) return setError('Please choose a category.'); setSaving(true); try { const payload = { name: form.name.trim(), description: form.description.trim(), price: Number(form.price), stock: Number(form.stock), categoryId: Number(form.categoryId), imageUrl: form.imageUrl || '' }; if (isEdit) await updateAdminProduct(product.id, payload); else await createAdminProduct(payload); onSaved() } catch (e) { setError(e.message) } finally { setSaving(false) } }
-  return <Modal show onHide={onClose} centered><Form onSubmit={save}><Modal.Header closeButton><Modal.Title>{isEdit ? 'Edit product' : 'Add product'}</Modal.Title></Modal.Header><Modal.Body>{error && <Alert variant="danger">{error}</Alert>}<Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control name="name" value={form.name} onChange={update} /></Form.Group><Form.Group className="mb-3"><Form.Label>Description</Form.Label><Form.Control as="textarea" rows={3} name="description" value={form.description || ''} onChange={update} /></Form.Group><div className="profile-form-grid"><Form.Group><Form.Label>Price (USD)</Form.Label><Form.Control name="price" inputMode="decimal" value={form.price} onChange={update} /></Form.Group><Form.Group><Form.Label>Stock</Form.Label><Form.Control name="stock" inputMode="numeric" value={form.stock} onChange={update} /></Form.Group></div><Form.Group className="mt-3"><Form.Label>Category</Form.Label><Form.Select name="categoryId" value={form.categoryId} onChange={update}><option value="">Choose a category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</Form.Select></Form.Group></Modal.Body><Modal.Footer><Button variant="light" onClick={onClose}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save product'}</Button></Modal.Footer></Form></Modal>
+  const [form, setForm] = useState(product)
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [processingImage, setProcessingImage] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [removeImage, setRemoveImage] = useState(false)
+  const inputRef = useRef(null)
+  const isEdit = Boolean(product.id)
+  const selectedCategory = categories.find((category) => String(category.id) === String(form.categoryId))?.name
+
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
+
+  function update(event) {
+    setForm((value) => ({ ...value, [event.target.name]: event.target.value }))
+  }
+
+  async function selectImage(file) {
+    if (!file) return
+    setError('')
+    setProcessingImage(true)
+    try {
+      const processed = await processProductImage(file)
+      setSelectedImage(processed)
+      setRemoveImage(false)
+      setPreviewUrl(URL.createObjectURL(processed))
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setProcessingImage(false)
+    }
+  }
+
+  function chooseImage(event) {
+    selectImage(event.target.files?.[0])
+  }
+
+  function dropImage(event) {
+    event.preventDefault()
+    selectImage(event.dataTransfer.files?.[0])
+  }
+
+  function markImageForRemoval() {
+    setSelectedImage(null)
+    setPreviewUrl(null)
+    setRemoveImage(true)
+  }
+
+  async function save(event) {
+    event.preventDefault()
+    setError('')
+    if (!form.name.trim()) return setError('Product name is required.')
+    if (!(Number(form.price) > 0)) return setError('Price must be greater than 0.')
+    if (!Number.isInteger(Number(form.stock)) || Number(form.stock) < 0) return setError('Stock must be a whole number of at least 0.')
+    if (!form.categoryId) return setError('Please choose a category.')
+
+    setSaving(true)
+    try {
+      const payload = { name: form.name.trim(), description: form.description.trim(), price: Number(form.price), stock: Number(form.stock), categoryId: Number(form.categoryId), imageUrl: form.imageUrl || '' }
+      const savedProduct = isEdit ? await updateAdminProduct(product.id, payload) : await createAdminProduct(payload)
+      if (selectedImage) await uploadProductImage(savedProduct.id, selectedImage)
+      else if (isEdit && removeImage) await deleteProductImage(savedProduct.id)
+      onSaved()
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const imageUrl = removeImage ? null : form.imageUrl
+
+  return <Modal show onHide={onClose} centered><Form onSubmit={save}>
+    <Modal.Header closeButton><Modal.Title>{isEdit ? 'Edit product' : 'Add product'}</Modal.Title></Modal.Header>
+    <Modal.Body>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control name="name" value={form.name} onChange={update} /></Form.Group>
+      <Form.Group className="mb-3"><Form.Label>Description</Form.Label><Form.Control as="textarea" rows={3} name="description" value={form.description || ''} onChange={update} /></Form.Group>
+      <div className="profile-form-grid"><Form.Group><Form.Label>Price (USD)</Form.Label><Form.Control name="price" inputMode="decimal" value={form.price} onChange={update} /></Form.Group><Form.Group><Form.Label>Stock</Form.Label><Form.Control name="stock" inputMode="numeric" value={form.stock} onChange={update} /></Form.Group></div>
+      <Form.Group className="mt-3"><Form.Label>Category</Form.Label><Form.Select name="categoryId" value={form.categoryId} onChange={update}><option value="">Choose a category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</Form.Select></Form.Group>
+      <section className="product-image-upload">
+        <Form.Label>Product image</Form.Label>
+        <div className="product-image-preview"><ProductVisual productName={form.name || 'Product preview'} categoryName={selectedCategory} imageUrl={imageUrl} previewUrl={previewUrl} /></div>
+        <div className="product-image-drop-zone" role="button" tabIndex={0} onClick={() => inputRef.current?.click()} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); inputRef.current?.click() } }} onDragOver={(event) => event.preventDefault()} onDrop={dropImage}>
+          <i className="bi bi-upload" aria-hidden="true" /><strong>Choose image or drag it here</strong><span>JPEG, PNG, or WebP. Images are resized before upload.</span>
+          <Form.Control ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="visually-hidden" onClick={(event) => { event.currentTarget.value = '' }} onChange={chooseImage} />
+        </div>
+        {processingImage && <p className="product-image-meta"><Spinner animation="border" size="sm" /> Processing image...</p>}
+        {selectedImage && <p className="product-image-meta">Processed image: {formatImageSize(selectedImage.size)}</p>}
+        {!selectedImage && removeImage && <p className="product-image-meta">The image will be removed when you save.</p>}
+        {(selectedImage || (isEdit && form.imageUrl && !removeImage)) && <Button type="button" variant="outline-danger" size="sm" onClick={markImageForRemoval}>Remove image</Button>}
+      </section>
+    </Modal.Body>
+    <Modal.Footer><Button variant="light" onClick={onClose}>Cancel</Button><Button type="submit" disabled={saving || processingImage}>{saving ? 'Saving...' : 'Save product'}</Button></Modal.Footer>
+  </Form></Modal>
 }
 
 function OrdersTab() {
