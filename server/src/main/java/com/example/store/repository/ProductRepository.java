@@ -102,4 +102,9 @@ public class ProductRepository {
         return findProductById(id);
     }
 
+    public Product setImageUrl(Integer id, String imageUrl) {
+        jdbcTemplate.update("UPDATE " + PRODUCTS_TABLE + " SET image_url = ? WHERE id = ?", imageUrl, id);
+        return findProductById(id);
+    }
+
 }

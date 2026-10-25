@@ -15,6 +15,10 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
 jwt:
   secret: ${JWT_SECRET:your_jwt_secret_key}
   expiration: 36000000

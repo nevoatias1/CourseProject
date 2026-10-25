@@ -30,6 +30,14 @@ CREATE TABLE products (
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
+CREATE TABLE product_images (
+    product_id INT PRIMARY KEY,
+    content_type VARCHAR(255) NOT NULL,
+    data BLOB NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
 CREATE TABLE favorites (
     username VARCHAR(255) NOT NULL,
     product_id INT NOT NULL,

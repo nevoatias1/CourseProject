@@ -25,6 +25,13 @@ CREATE TABLE IF NOT EXISTS products (
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE TABLE IF NOT EXISTS product_images (
+    product_id INTEGER PRIMARY KEY REFERENCES products(id),
+    content_type VARCHAR(255) NOT NULL,
+    data BYTEA NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS favorites (
     username VARCHAR(255) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
     product_id INTEGER NOT NULL REFERENCES products(id),

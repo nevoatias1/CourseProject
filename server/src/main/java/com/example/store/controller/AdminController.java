@@ -12,6 +12,7 @@ import com.example.store.service.ProductService;
 import com.example.store.service.UserService;
 import com.example.store.utils.JwtUtil;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,7 +24,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -103,6 +106,16 @@ public class AdminController {
     @PutMapping("/products/{id}/restore")
     public ResponseEntity<Product> restoreProduct(@PathVariable Integer id) {
         return ResponseEntity.ok(productService.restoreProduct(id));
+    }
+
+    @PutMapping(value = "/products/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> uploadProductImage(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(productService.uploadProductImage(id, file));
+    }
+
+    @DeleteMapping("/products/{id}/image")
+    public ResponseEntity<Product> deleteProductImage(@PathVariable Integer id) {
+        return ResponseEntity.ok(productService.deleteProductImage(id));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
